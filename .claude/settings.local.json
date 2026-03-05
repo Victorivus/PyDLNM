@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install -e \".[dev]\")",
+      "Bash(python -m pytest tests/ -v --tb=short)",
+      "Bash(python -c \"import numpy; print\\(numpy.__version__\\); import sys; print\\(sys.version\\)\")",
+      "Bash(pip install --upgrade numpy)"
+    ]
+  }
+}
