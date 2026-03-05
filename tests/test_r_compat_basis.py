@@ -12,10 +12,13 @@ even before fixtures have been committed.
 """
 
 import numpy as np
-import pytest
+from r_compat_helpers import (
+    load_fixture_matrix,
+    load_fixture_vector,
+    require_fixtures,
+)
 
 import pydlnm
-from r_compat_helpers import FIXTURES_DIR, load_fixture_matrix, load_fixture_vector, require_fixtures
 
 # ---------------------------------------------------------------------------
 # Tolerance — match R to ~6 significant figures (double precision round-trip)

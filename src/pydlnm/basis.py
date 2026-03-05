@@ -19,15 +19,15 @@ The following basis functions are available:
 
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import Callable
 
 import numpy as np
-from scipy.interpolate import BSpline, make_interp_spline
-
+from scipy.interpolate import BSpline
 
 # ---------------------------------------------------------------------------
 # OneBasis container
 # ---------------------------------------------------------------------------
+
 
 class OneBasis(np.ndarray):
     """A basis matrix with metadata attributes.
@@ -37,11 +37,44 @@ class OneBasis(np.ndarray):
     and other parameters needed to reproduce the basis at prediction time.
     """
 
+    # Typed instance attributes (set dynamically; declared here for mypy)
+    fun: str
+    range_: np.ndarray | None
+    cen: float | None
+    df: int | None
+    knots: np.ndarray | None
+    intercept: bool | None
+    degree: int | None
+    Boundary_knots: np.ndarray | None
+    S: np.ndarray | None
+    fx: bool | None
+    diff_order: int | None
+    thr_value: np.ndarray | float | None
+    side: str | None
+    values: np.ndarray | None
+    scale: float | None
+    breaks: np.ndarray | None
+    ref: int | None
+
     # Attributes that travel with the array through views / slicing
     _metadata = [
-        "fun", "range_", "cen", "df", "knots", "intercept",
-        "degree", "Boundary_knots", "S", "fx", "diff_order",
-        "thr_value", "side", "values", "scale", "breaks", "ref",
+        "fun",
+        "range_",
+        "cen",
+        "df",
+        "knots",
+        "intercept",
+        "degree",
+        "Boundary_knots",
+        "S",
+        "fx",
+        "diff_order",
+        "thr_value",
+        "side",
+        "values",
+        "scale",
+        "breaks",
+        "ref",
     ]
 
     def __new__(cls, data, **attrs):
@@ -75,7 +108,7 @@ class OneBasis(np.ndarray):
 # onebasis — the dispatcher
 # ---------------------------------------------------------------------------
 
-_BASIS_REGISTRY: dict[str, callable] = {}
+_BASIS_REGISTRY: dict[str, Callable[..., OneBasis]] = {}
 
 
 def onebasis(x: np.ndarray, fun: str = "ns", **kwargs) -> OneBasis:
@@ -130,9 +163,11 @@ def onebasis(x: np.ndarray, fun: str = "ns", **kwargs) -> OneBasis:
 
 def _register(name: str):
     """Decorator to register a basis function."""
+
     def decorator(fn):
         _BASIS_REGISTRY[name] = fn
         return fn
+
     return decorator
 
 
@@ -140,13 +175,14 @@ def _register(name: str):
 # Natural splines (ns)
 # ---------------------------------------------------------------------------
 
+
 @_register("ns")
 def ns(
     x: np.ndarray,
-    df: Optional[int] = None,
-    knots: Optional[np.ndarray] = None,
+    df: int | None = None,
+    knots: np.ndarray | None = None,
     intercept: bool = False,
-    Boundary_knots: Optional[np.ndarray] = None,
+    Boundary_knots: np.ndarray | None = None,
     **kwargs,
 ) -> OneBasis:
     """Natural cubic spline basis.
@@ -169,7 +205,6 @@ def ns(
     OneBasis
         Natural spline basis matrix.
     """
-    from patsy import dmatrix
     x_clean = x.copy()
     nan_mask = np.isnan(x_clean)
     if nan_mask.any():
@@ -180,7 +215,7 @@ def ns(
 
     if knots is not None:
         knots = np.sort(np.asarray(knots, dtype=float))
-        df = len(knots) + 1 + int(intercept)
+        df = len(knots) + 1 + int(intercept)  # type: ignore[arg-type]
     else:
         if df is None:
             df = 3
@@ -195,7 +230,7 @@ def ns(
 
     # Build using patsy cr() which creates natural splines
     # We'll use scipy instead for better control
-    basis_mat = _ns_basis(x_clean, knots, Boundary_knots, intercept)
+    basis_mat = _ns_basis(x_clean, knots, Boundary_knots, intercept)  # type: ignore[arg-type]
 
     if nan_mask.any():
         basis_full = np.full((len(x), basis_mat.shape[1]), np.nan)
@@ -225,16 +260,18 @@ def _ns_basis(
     basis and then applying the natural spline constraint (linear beyond
     the boundary knots).
     """
-    all_knots = np.sort(np.concatenate([boundary_knots, knots]))
+    np.sort(np.concatenate([boundary_knots, knots]))
     degree = 3
 
     # Augmented knot sequence for B-spline
-    n_inner = len(knots)
-    augmented = np.concatenate([
-        np.repeat(boundary_knots[0], degree + 1),
-        knots,
-        np.repeat(boundary_knots[1], degree + 1),
-    ])
+    len(knots)
+    augmented = np.concatenate(
+        [
+            np.repeat(boundary_knots[0], degree + 1),
+            knots,
+            np.repeat(boundary_knots[1], degree + 1),
+        ]
+    )
 
     n_basis = len(augmented) - degree - 1  # total B-spline basis functions
 
@@ -245,7 +282,7 @@ def _ns_basis(
     basis = np.zeros((len(x), n_basis))
     left_mask = x < boundary_knots[0]
     right_mask = x > boundary_knots[1]
-    interior_mask = ~left_mask & ~right_mask
+    ~left_mask & ~right_mask
     for i in range(n_basis):
         c = np.zeros(n_basis)
         c[i] = 1.0
@@ -293,14 +330,15 @@ def _ns_basis(
 # B-splines (bs)
 # ---------------------------------------------------------------------------
 
+
 @_register("bs")
 def bs(
     x: np.ndarray,
-    df: Optional[int] = None,
-    knots: Optional[np.ndarray] = None,
+    df: int | None = None,
+    knots: np.ndarray | None = None,
     degree: int = 3,
     intercept: bool = False,
-    Boundary_knots: Optional[np.ndarray] = None,
+    Boundary_knots: np.ndarray | None = None,
     **kwargs,
 ) -> OneBasis:
     """B-spline basis.
@@ -335,7 +373,7 @@ def bs(
 
     if knots is not None:
         knots = np.sort(np.asarray(knots, dtype=float))
-        df = len(knots) + degree + int(intercept)
+        df = len(knots) + degree + int(intercept)  # type: ignore[arg-type]
     else:
         if df is None:
             df = degree + int(intercept)
@@ -347,11 +385,13 @@ def bs(
             knots = np.array([])
 
     # Build augmented knot sequence
-    augmented = np.concatenate([
-        np.repeat(Boundary_knots[0], degree + 1),
-        knots,
-        np.repeat(Boundary_knots[1], degree + 1),
-    ])
+    augmented = np.concatenate(
+        [
+            np.repeat(Boundary_knots[0], degree + 1),
+            knots,
+            np.repeat(Boundary_knots[1], degree + 1),
+        ]
+    )
 
     n_basis = len(augmented) - degree - 1
     basis_mat = np.zeros((len(x_clean), n_basis))
@@ -388,15 +428,16 @@ def bs(
 # P-splines (ps)
 # ---------------------------------------------------------------------------
 
+
 @_register("ps")
 def ps(
     x: np.ndarray,
     df: int = 10,
-    knots: Optional[np.ndarray] = None,
+    knots: np.ndarray | None = None,
     degree: int = 3,
     intercept: bool = False,
     fx: bool = False,
-    S: Optional[np.ndarray] = None,
+    S: np.ndarray | None = None,
     diff: int = 2,
     **kwargs,
 ) -> OneBasis:
@@ -449,10 +490,10 @@ def ps(
         knots = np.linspace(xl - dx * degree, xu + dx * degree, nik + 2 * degree)
     else:
         knots = np.asarray(knots, dtype=float)
-        df = len(knots) - degree - 2 + int(intercept)
+        df = len(knots) - degree - 2 + int(intercept)  # type: ignore[arg-type]
 
     # Build B-spline basis using scipy
-    n_basis = len(knots) - degree - 1
+    n_basis = len(knots) - degree - 1  # type: ignore[arg-type]
     basis_mat = np.zeros((len(x_clean), n_basis))
     for i in range(n_basis):
         c = np.zeros(n_basis)
@@ -500,14 +541,15 @@ def ps(
 # Natural cubic regression splines (cr)
 # ---------------------------------------------------------------------------
 
+
 @_register("cr")
 def cr(
     x: np.ndarray,
     df: int = 10,
-    knots: Optional[np.ndarray] = None,
+    knots: np.ndarray | None = None,
     intercept: bool = False,
     fx: bool = False,
-    S: Optional[np.ndarray] = None,
+    S: np.ndarray | None = None,
     **kwargs,
 ) -> OneBasis:
     """Natural cubic regression spline basis (with optional penalty).
@@ -551,27 +593,27 @@ def cr(
         )
     else:
         knots = np.sort(np.asarray(knots, dtype=float))
-        df = len(knots) - int(not intercept)
+        df = len(knots) - int(not intercept)  # type: ignore[arg-type]
 
     # Build a natural cubic spline basis at the knots
     # Use the approach: basis = ns evaluated at data, knots placed at given positions
-    n_knots = len(knots)
-    boundary = np.array([knots[0], knots[-1]])
-    inner_knots = knots[1:-1]
+    len(knots)  # type: ignore[arg-type]
+    boundary = np.array([knots[0], knots[-1]])  # type: ignore[index]
+    inner_knots = knots[1:-1]  # type: ignore[index]
 
     basis_mat = _ns_basis(x_clean, inner_knots, boundary, intercept=True)
 
     # Compute penalty matrix from the basis at knot positions
-    basis_at_knots = _ns_basis(knots, inner_knots, boundary, intercept=True)
+    basis_at_knots = _ns_basis(knots, inner_knots, boundary, intercept=True)  # type: ignore[arg-type]
 
     # The penalty for a CR spline is based on the integrated squared second derivative
     # We approximate it using the knot-based approach
     n_col = basis_at_knots.shape[1]
     if not fx and S is None:
         # Compute a roughness penalty matrix using finite differences
-        h = np.diff(knots)
+        np.diff(knots)
         # Construct the band matrix for integrated squared second derivative
-        n_inner = len(inner_knots)
+        len(inner_knots)
         # Simple difference penalty as approximation
         if n_col > 2:
             D = np.diff(np.eye(n_col), n=2, axis=0)
@@ -609,11 +651,12 @@ def cr(
 # Strata (indicator variables)
 # ---------------------------------------------------------------------------
 
+
 @_register("strata")
 def strata(
     x: np.ndarray,
     df: int = 1,
-    breaks: Optional[np.ndarray] = None,
+    breaks: np.ndarray | None = None,
     ref: int = 1,
     intercept: bool = False,
     **kwargs,
@@ -649,7 +692,7 @@ def strata(
     else:
         breaks = np.array([])
 
-    df = len(breaks) + int(intercept)
+    df = len(breaks) + int(intercept)  # type: ignore[arg-type]
 
     # Cut x into categories
     edges = np.concatenate([[rng[0] - 0.0001], breaks, [rng[1] + 0.0001]])
@@ -669,7 +712,7 @@ def strata(
     if not intercept and ref == 0:
         ref = 1
 
-    if len(breaks) > 0:
+    if len(breaks) > 0:  # type: ignore[arg-type]
         if ref != 0:
             basis_mat = np.delete(basis_mat, ref - 1, axis=1)
         if intercept and ref != 0:
@@ -690,11 +733,12 @@ def strata(
 # Threshold (thr)
 # ---------------------------------------------------------------------------
 
+
 @_register("thr")
 def thr(
     x: np.ndarray,
-    thr_value: Optional[Union[float, np.ndarray]] = None,
-    side: Optional[str] = None,
+    thr_value: float | np.ndarray | None = None,
+    side: str | None = None,
     intercept: bool = False,
     **kwargs,
 ) -> OneBasis:
@@ -720,27 +764,26 @@ def thr(
     """
     if thr_value is None:
         thr_value = np.nanmedian(x)
-    thr_value = np.atleast_1d(np.asarray(thr_value, dtype=float))
-    thr_value = np.sort(thr_value)
+    thr_arr: np.ndarray = np.sort(np.atleast_1d(np.asarray(thr_value, dtype=float)))  # type: ignore[assignment]
 
     if side is None:
-        side = "d" if len(thr_value) > 1 else "h"
+        side = "d" if len(thr_arr) > 1 else "h"
 
     if side == "d":
-        thr_value = np.array([thr_value[0], thr_value[-1]])
+        thr_arr = np.array([thr_arr[0], thr_arr[-1]])
     else:
-        thr_value = np.array([thr_value[0]])
+        thr_arr = np.array([thr_arr[0]])
 
     if side not in ("h", "l", "d"):
         raise ValueError("'side' must be one of 'h', 'l', 'd'")
 
     if side == "h":
-        basis_mat = np.maximum(x - thr_value[0], 0).reshape(-1, 1)
+        basis_mat = np.maximum(x - thr_arr[0], 0).reshape(-1, 1)
     elif side == "l":
-        basis_mat = (-np.minimum(x - thr_value[0], 0)).reshape(-1, 1)
+        basis_mat = (-np.minimum(x - thr_arr[0], 0)).reshape(-1, 1)
     else:  # "d"
-        col1 = -np.minimum(x - thr_value[0], 0)
-        col2 = np.maximum(x - thr_value[1], 0)
+        col1 = -np.minimum(x - thr_arr[0], 0)
+        col2 = np.maximum(x - thr_arr[1], 0)
         basis_mat = np.column_stack([col1, col2])
 
     if intercept:
@@ -749,7 +792,7 @@ def thr(
     return OneBasis(
         basis_mat,
         fun="thr",
-        thr_value=thr_value,
+        thr_value=thr_arr,
         side=side,
         intercept=intercept,
     )
@@ -759,10 +802,11 @@ def thr(
 # Integer (categorical)
 # ---------------------------------------------------------------------------
 
+
 @_register("integer")
 def integer(
     x: np.ndarray,
-    values: Optional[np.ndarray] = None,
+    values: np.ndarray | None = None,
     intercept: bool = False,
     **kwargs,
 ) -> OneBasis:
@@ -791,8 +835,8 @@ def integer(
     else:
         values = np.asarray(values, dtype=float)
 
-    basis_mat = np.zeros((len(x), len(values)))
-    for i, v in enumerate(values):
+    basis_mat = np.zeros((len(x), len(values)))  # type: ignore[arg-type]
+    for i, v in enumerate(values):  # type: ignore[union-attr,arg-type]
         basis_mat[:, i] = (x == v).astype(float)
 
     if basis_mat.shape[1] > 1 and not intercept:
@@ -811,6 +855,7 @@ def integer(
 # ---------------------------------------------------------------------------
 # Linear (lin)
 # ---------------------------------------------------------------------------
+
 
 @_register("lin")
 def lin(x: np.ndarray, intercept: bool = False, **kwargs) -> OneBasis:
@@ -839,11 +884,12 @@ def lin(x: np.ndarray, intercept: bool = False, **kwargs) -> OneBasis:
 # Polynomial (poly)
 # ---------------------------------------------------------------------------
 
+
 @_register("poly")
 def poly(
     x: np.ndarray,
     degree: int = 1,
-    scale: Optional[float] = None,
+    scale: float | None = None,
     intercept: bool = False,
     **kwargs,
 ) -> OneBasis:

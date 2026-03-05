@@ -75,8 +75,20 @@ line-length = 99
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
+ignore = [
+    # Naming conventions intentionally match R's dlnm API:
+    # Boundary_knots, S, D, Q, X, Y, M, B, A — mathematical / R-compatible names
+    "N802",  # Function name should be lowercase (load_chicagoNMMAPS, _mkXpred)
+    "N803",  # Argument name should be lowercase (Boundary_knots, S, X, B, A)
+    "N806",  # Variable in function should be lowercase (Q, D, X, Y, M, Xpred, …)
+    "N815",  # Variable in class scope should not be mixedCase (allRRfit, matRRfit, …)
+    "E741",  # Ambiguous variable name (l used as lag index, matches R conventions)
+    "SIM108",  # Use ternary operator — explicit if/else is clearer for multi-step init
+]
 
 [tool.mypy]
 python_version = "3.9"
-warn_return_any = true
+warn_return_any = false
 warn_unused_configs = true
+implicit_optional = true
+ignore_missing_imports = true

@@ -7,8 +7,6 @@ appropriate.
 
 from __future__ import annotations
 
-from typing import Optional
-
 import numpy as np
 
 from pydlnm.utils import mklag
@@ -16,7 +14,7 @@ from pydlnm.utils import mklag
 
 def logknots(
     x: np.ndarray,
-    nk: Optional[int] = None,
+    nk: int | None = None,
     fun: str = "ns",
     df: int = 1,
     degree: int = 3,
@@ -58,10 +56,7 @@ def logknots(
     """
     x = np.asarray(x, dtype=float).ravel()
 
-    if len(x) < 3:
-        rng = mklag(x)
-    else:
-        rng = np.array([np.nanmin(x), np.nanmax(x)])
+    rng = mklag(x) if len(x) < 3 else np.array([np.nanmin(x), np.nanmax(x)])
 
     if np.diff(rng)[0] == 0:
         raise ValueError("range must be > 0")
@@ -81,16 +76,14 @@ def logknots(
         raise ValueError("choice of arguments defines no knots")
 
     d = float(np.diff(rng)[0])
-    knots = rng[0] + np.exp(
-        ((1 + np.log(d)) / (nk + 1)) * np.arange(1, nk + 1) - 1
-    )
+    knots = rng[0] + np.exp(((1 + np.log(d)) / (nk + 1)) * np.arange(1, nk + 1) - 1)
 
     return knots
 
 
 def equalknots(
     x: np.ndarray,
-    nk: Optional[int] = None,
+    nk: int | None = None,
     fun: str = "ns",
     df: int = 1,
     degree: int = 3,

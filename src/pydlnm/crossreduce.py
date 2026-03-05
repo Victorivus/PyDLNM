@@ -8,7 +8,6 @@ or variable-specific at a given exposure value.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional, Union
 
 import numpy as np
 from scipy.stats import norm
@@ -62,22 +61,22 @@ class CrossReduce:
     vcov: np.ndarray
     basis: OneBasis
     type: str
-    value: Optional[float] = None
-    predvar: Optional[np.ndarray] = None
-    cen: Optional[float] = None
+    value: float | None = None
+    predvar: np.ndarray | None = None
+    cen: float | None = None
     lag: np.ndarray = field(default_factory=lambda: np.array([0, 0]))
     bylag: int = 1
     fit: np.ndarray = field(default_factory=lambda: np.array([]))
     se: np.ndarray = field(default_factory=lambda: np.array([]))
     ci_level: float = 0.95
-    model_class: Optional[str] = None
-    model_link: Optional[str] = None
+    model_class: str | None = None
+    model_link: str | None = None
 
-    RRfit: Optional[np.ndarray] = None
-    RRlow: Optional[np.ndarray] = None
-    RRhigh: Optional[np.ndarray] = None
-    low: Optional[np.ndarray] = None
-    high: Optional[np.ndarray] = None
+    RRfit: np.ndarray | None = None
+    RRlow: np.ndarray | None = None
+    RRhigh: np.ndarray | None = None
+    low: np.ndarray | None = None
+    high: np.ndarray | None = None
 
     def summary(self) -> str:
         """Return a textual summary."""
@@ -96,17 +95,17 @@ def crossreduce(
     basis: CrossBasis,
     model=None,
     type: str = "overall",
-    value: Optional[float] = None,
-    coef: Optional[np.ndarray] = None,
-    vcov: Optional[np.ndarray] = None,
-    model_link: Optional[str] = None,
-    at: Optional[Union[np.ndarray, list]] = None,
-    from_val: Optional[float] = None,
-    to_val: Optional[float] = None,
-    by: Optional[float] = None,
-    lag: Optional[Union[int, np.ndarray]] = None,
+    value: float | None = None,
+    coef: np.ndarray | None = None,
+    vcov: np.ndarray | None = None,
+    model_link: str | None = None,
+    at: np.ndarray | list | None = None,
+    from_val: float | None = None,
+    to_val: float | None = None,
+    by: float | None = None,
+    lag: int | np.ndarray | None = None,
     bylag: int = 1,
-    cen: Optional[Union[float, bool]] = None,
+    cen: float | bool | None = None,
     ci_level: float = 0.95,
 ) -> CrossReduce:
     """Reduce a cross-basis fit to a uni-dimensional summary.
@@ -155,13 +154,10 @@ def crossreduce(
     if type != "overall":
         if value is None:
             raise ValueError("'value' must be provided for type 'var' or 'lag'")
-        if type == "lag" and (value < basis.lag[0] or value > basis.lag[1]):
+        if type == "lag" and (value < basis.lag[0] or value > basis.lag[1]):  # type: ignore[index]
             raise ValueError("'value' of lag-specific effects must be within the lag range")
 
-    if lag is None:
-        lag = basis.lag.copy()
-    else:
-        lag = mklag(lag)
+    lag = basis.lag.copy() if lag is None else mklag(lag)  # type: ignore[union-attr]
 
     if not 0 < ci_level < 1:
         raise ValueError("'ci_level' must be between 0 and 1")
@@ -169,12 +165,13 @@ def crossreduce(
     # --- Extract coefficients ---
     if model is not None:
         from pydlnm.crosspred import _extract_from_model, _find_basis_indices, _get_param_names
+
         coef_all, vcov_all, model_link = _extract_from_model(model, model_link)
         param_names = _get_param_names(model)
         indices = _find_basis_indices(param_names, basis.shape[1], basis)
         coef = coef_all[indices]
         vcov = vcov_all[np.ix_(indices, indices)]
-        model_class = type.__class__.__name__ if hasattr(type, '__class__') else None
+        model_class = type.__class__.__name__ if hasattr(type, "__class__") else None
         model_class = model.__class__.__name__
     else:
         if coef is None or vcov is None:
@@ -192,12 +189,12 @@ def crossreduce(
     cen_val = mkcen(cen, "cb", basis, range_val)
 
     # --- Reduction ---
-    argvar = dict(basis.argvar)
+    argvar = dict(basis.argvar)  # type: ignore[arg-type]
     argvar.pop("cen", None)
-    arglag = dict(basis.arglag)
+    arglag = dict(basis.arglag)  # type: ignore[arg-type]
 
-    ncol_var = int(basis.df[0])
-    ncol_lag = int(basis.df[1])
+    ncol_var = int(basis.df[0])  # type: ignore[index]
+    ncol_lag = int(basis.df[1])  # type: ignore[index]
 
     if type == "overall":
         lagbasis = onebasis(seqlag(lag).astype(float), **arglag)

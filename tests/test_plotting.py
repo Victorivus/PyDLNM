@@ -1,6 +1,7 @@
 """Tests for pydlnm.plotting module."""
 
 import matplotlib
+
 matplotlib.use("Agg")  # Non-interactive backend for testing
 
 import numpy as np
@@ -18,7 +19,8 @@ def pred():
     np.random.seed(42)
     x = np.random.randn(200) * 5 + 20
     cb = crossbasis(
-        x, lag=10,
+        x,
+        lag=10,
         argvar={"fun": "ns", "df": 3},
         arglag={"fun": "ns", "df": 3},
     )
@@ -34,7 +36,8 @@ def red():
     np.random.seed(42)
     x = np.random.randn(200) * 5 + 20
     cb = crossbasis(
-        x, lag=10,
+        x,
+        lag=10,
         argvar={"fun": "ns", "df": 3},
         arglag={"fun": "ns", "df": 3},
     )

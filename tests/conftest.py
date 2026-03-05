@@ -2,7 +2,6 @@
 
 import numpy as np
 import pytest
-
 from r_compat_helpers import _fixtures_present, load_fixture_vector
 
 

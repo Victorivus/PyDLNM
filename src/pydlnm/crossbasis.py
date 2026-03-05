@@ -8,11 +8,14 @@ dimension.
 
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import TYPE_CHECKING
 
 import numpy as np
 
-from pydlnm.basis import OneBasis, onebasis
+if TYPE_CHECKING:
+    import pandas as pd
+
+from pydlnm.basis import onebasis
 from pydlnm.utils import lag_matrix, mklag, seqlag
 
 
@@ -24,6 +27,13 @@ class CrossBasis(np.ndarray):
     """
 
     _metadata = ["df", "range_", "lag", "argvar", "arglag", "group_count"]
+
+    df: np.ndarray | None
+    range_: np.ndarray | None
+    lag: np.ndarray | None
+    argvar: dict | None
+    arglag: dict | None
+    group_count: int | None
 
     def __new__(cls, data, **attrs):
         obj = np.asarray(data).view(cls)
@@ -50,7 +60,7 @@ class CrossBasis(np.ndarray):
         lines = [
             "CROSSBASIS FUNCTIONS",
             f"observations: {self.shape[0]}",
-            f"range: {self.range_[0]} to {self.range_[1]}",
+            f"range: {self.range_[0]} to {self.range_[1]}",  # type: ignore[index]
             f"lag period: {self.lag}",
             f"total df: {self.shape[1]}",
             "",
@@ -69,11 +79,11 @@ class CrossBasis(np.ndarray):
 
 
 def crossbasis(
-    x: Union[np.ndarray, "pd.Series"],
-    lag: Optional[Union[int, np.ndarray]] = None,
-    argvar: Optional[dict] = None,
-    arglag: Optional[dict] = None,
-    group: Optional[np.ndarray] = None,
+    x: np.ndarray | pd.Series,
+    lag: int | np.ndarray | None = None,
+    argvar: dict | None = None,
+    arglag: dict | None = None,
+    group: np.ndarray | None = None,
 ) -> CrossBasis:
     """Construct a cross-basis matrix for a DLNM.
 
@@ -134,16 +144,12 @@ def crossbasis(
     dim = x.shape
 
     # Normalise lag
-    if lag is None:
-        lag = np.array([0, dim[1] - 1])
-    else:
-        lag = mklag(lag)
+    lag = np.array([0, dim[1] - 1]) if lag is None else mklag(lag)
 
     lag_period = int(lag[1] - lag[0]) + 1
     if dim[1] not in (1, lag_period):
         raise ValueError(
-            f"NCOL(x) must be 1 (time series) or {lag_period} (lagged matrix), "
-            f"got {dim[1]}"
+            f"NCOL(x) must be 1 (time series) or {lag_period} (lagged matrix), got {dim[1]}"
         )
 
     # --- Variable basis ---
@@ -156,7 +162,7 @@ def crossbasis(
         arglag = {"fun": "strata", "df": 1, "intercept": True}
 
     # Default: include intercept for lag basis
-    fun_name = arglag.get("fun", "ns")
+    arglag.get("fun", "ns")
     if "intercept" not in arglag:
         arglag["intercept"] = True
     # Force no centering for lag basis
@@ -173,9 +179,7 @@ def crossbasis(
         group = np.asarray(group)
         if dim[1] > 1:
             raise ValueError("'group' allowed only for time series data")
-        min_group_len = min(
-            len(np.where(group == g)[0]) for g in np.unique(group)
-        )
+        min_group_len = min(len(np.where(group == g)[0]) for g in np.unique(group))
         if min_group_len <= int(lag[1] - lag[0]):
             raise ValueError("each group must have length > diff(lag)")
 
@@ -192,24 +196,48 @@ def crossbasis(
             cb[:, col_idx] = np.sum(mat * basislag[:, l], axis=1)
 
     # --- Column names ---
-    colnames = [
-        f"v{v + 1}.l{l + 1}" for v in range(ncol_var) for l in range(ncol_lag)
-    ]
+    [f"v{v + 1}.l{l + 1}" for v in range(ncol_var) for l in range(ncol_lag)]
 
     # --- Reconstruct argvar/arglag from basis attributes ---
-    argvar_out = {"fun": basisvar.fun}
-    for attr_name in ("df", "knots", "degree", "intercept", "Boundary_knots",
-                      "thr_value", "side", "values", "scale", "breaks", "ref",
-                      "S", "fx", "diff_order"):
+    argvar_out: dict[str, object] = {"fun": basisvar.fun}
+    for attr_name in (
+        "df",
+        "knots",
+        "degree",
+        "intercept",
+        "Boundary_knots",
+        "thr_value",
+        "side",
+        "values",
+        "scale",
+        "breaks",
+        "ref",
+        "S",
+        "fx",
+        "diff_order",
+    ):
         val = getattr(basisvar, attr_name, None)
         if val is not None:
             argvar_out[attr_name] = val
     argvar_out["cen"] = basisvar.cen
 
-    arglag_out = {"fun": basislag.fun}
-    for attr_name in ("df", "knots", "degree", "intercept", "Boundary_knots",
-                      "thr_value", "side", "values", "scale", "breaks", "ref",
-                      "S", "fx", "diff_order"):
+    arglag_out: dict[str, object] = {"fun": basislag.fun}
+    for attr_name in (
+        "df",
+        "knots",
+        "degree",
+        "intercept",
+        "Boundary_knots",
+        "thr_value",
+        "side",
+        "values",
+        "scale",
+        "breaks",
+        "ref",
+        "S",
+        "fx",
+        "diff_order",
+    ):
         val = getattr(basislag, attr_name, None)
         if val is not None:
             arglag_out[attr_name] = val

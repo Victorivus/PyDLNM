@@ -13,7 +13,8 @@ def cb_ps():
     np.random.seed(42)
     x = np.random.randn(200) * 5 + 20
     return crossbasis(
-        x, lag=10,
+        x,
+        lag=10,
         argvar={"fun": "ps", "df": 5},
         arglag={"fun": "ps", "df": 4},
     )
@@ -25,7 +26,8 @@ def cb_ns():
     np.random.seed(42)
     x = np.random.randn(200) * 5 + 20
     return crossbasis(
-        x, lag=10,
+        x,
+        lag=10,
         argvar={"fun": "ns", "df": 4},
         arglag={"fun": "ns", "df": 3},
     )

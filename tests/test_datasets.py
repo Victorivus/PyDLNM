@@ -14,8 +14,20 @@ class TestChicagoNMMAPS:
     def test_columns(self):
         df = load_chicagoNMMAPS()
         expected = [
-            "date", "time", "year", "month", "doy", "dow",
-            "death", "cvd", "resp", "temp", "dptp", "rhum", "pm10", "o3",
+            "date",
+            "time",
+            "year",
+            "month",
+            "doy",
+            "dow",
+            "death",
+            "cvd",
+            "resp",
+            "temp",
+            "dptp",
+            "rhum",
+            "pm10",
+            "o3",
         ]
         assert df.columns.tolist() == expected
 

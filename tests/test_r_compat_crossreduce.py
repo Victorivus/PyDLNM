@@ -10,12 +10,12 @@ crosspred tests.  Three reduction types are tested:
 
 import numpy as np
 import pytest
-
-import pydlnm
 from r_compat_helpers import (
     load_fixture_vector,
     require_fixtures,
 )
+
+import pydlnm
 
 RTOL = 1e-5
 ATOL = 1e-9
@@ -80,26 +80,46 @@ class TestCrossreduceOverall:
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crossreduce_overall_fit.csv")
     def test_fit(self, red_overall):
         r = load_fixture_vector("crossreduce_overall_fit.csv")
-        np.testing.assert_allclose(red_overall.fit, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crossreduce overall fit diverges from R")
+        np.testing.assert_allclose(
+            red_overall.fit,
+            r,
+            rtol=RTOL,
+            atol=ATOL,
+            err_msg="crossreduce overall fit diverges from R",
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crossreduce_overall_se.csv")
     def test_se(self, red_overall):
         r = load_fixture_vector("crossreduce_overall_se.csv")
-        np.testing.assert_allclose(red_overall.se, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crossreduce overall se diverges from R")
+        np.testing.assert_allclose(
+            red_overall.se,
+            r,
+            rtol=RTOL,
+            atol=ATOL,
+            err_msg="crossreduce overall se diverges from R",
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crossreduce_overall_low.csv")
     def test_low(self, red_overall):
         r = load_fixture_vector("crossreduce_overall_low.csv")
-        np.testing.assert_allclose(red_overall.low, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crossreduce overall low diverges from R")
+        np.testing.assert_allclose(
+            red_overall.low,
+            r,
+            rtol=RTOL,
+            atol=ATOL,
+            err_msg="crossreduce overall low diverges from R",
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crossreduce_overall_high.csv")
     def test_high(self, red_overall):
         r = load_fixture_vector("crossreduce_overall_high.csv")
-        np.testing.assert_allclose(red_overall.high, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crossreduce overall high diverges from R")
+        np.testing.assert_allclose(
+            red_overall.high,
+            r,
+            rtol=RTOL,
+            atol=ATOL,
+            err_msg="crossreduce overall high diverges from R",
+        )
 
     # Structural
     def test_type(self, red_overall):
@@ -127,26 +147,30 @@ class TestCrossreduceVar:
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crossreduce_var_fit.csv")
     def test_fit(self, red_var):
         r = load_fixture_vector("crossreduce_var_fit.csv")
-        np.testing.assert_allclose(red_var.fit, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crossreduce var fit diverges from R")
+        np.testing.assert_allclose(
+            red_var.fit, r, rtol=RTOL, atol=ATOL, err_msg="crossreduce var fit diverges from R"
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crossreduce_var_se.csv")
     def test_se(self, red_var):
         r = load_fixture_vector("crossreduce_var_se.csv")
-        np.testing.assert_allclose(red_var.se, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crossreduce var se diverges from R")
+        np.testing.assert_allclose(
+            red_var.se, r, rtol=RTOL, atol=ATOL, err_msg="crossreduce var se diverges from R"
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crossreduce_var_low.csv")
     def test_low(self, red_var):
         r = load_fixture_vector("crossreduce_var_low.csv")
-        np.testing.assert_allclose(red_var.low, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crossreduce var low diverges from R")
+        np.testing.assert_allclose(
+            red_var.low, r, rtol=RTOL, atol=ATOL, err_msg="crossreduce var low diverges from R"
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crossreduce_var_high.csv")
     def test_high(self, red_var):
         r = load_fixture_vector("crossreduce_var_high.csv")
-        np.testing.assert_allclose(red_var.high, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crossreduce var high diverges from R")
+        np.testing.assert_allclose(
+            red_var.high, r, rtol=RTOL, atol=ATOL, err_msg="crossreduce var high diverges from R"
+        )
 
     def test_type_and_value(self, red_var):
         assert red_var.type == "var"
@@ -166,26 +190,30 @@ class TestCrossreduceLag:
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crossreduce_lag_fit.csv")
     def test_fit(self, red_lag):
         r = load_fixture_vector("crossreduce_lag_fit.csv")
-        np.testing.assert_allclose(red_lag.fit, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crossreduce lag fit diverges from R")
+        np.testing.assert_allclose(
+            red_lag.fit, r, rtol=RTOL, atol=ATOL, err_msg="crossreduce lag fit diverges from R"
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crossreduce_lag_se.csv")
     def test_se(self, red_lag):
         r = load_fixture_vector("crossreduce_lag_se.csv")
-        np.testing.assert_allclose(red_lag.se, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crossreduce lag se diverges from R")
+        np.testing.assert_allclose(
+            red_lag.se, r, rtol=RTOL, atol=ATOL, err_msg="crossreduce lag se diverges from R"
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crossreduce_lag_low.csv")
     def test_low(self, red_lag):
         r = load_fixture_vector("crossreduce_lag_low.csv")
-        np.testing.assert_allclose(red_lag.low, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crossreduce lag low diverges from R")
+        np.testing.assert_allclose(
+            red_lag.low, r, rtol=RTOL, atol=ATOL, err_msg="crossreduce lag low diverges from R"
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crossreduce_lag_high.csv")
     def test_high(self, red_lag):
         r = load_fixture_vector("crossreduce_lag_high.csv")
-        np.testing.assert_allclose(red_lag.high, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crossreduce lag high diverges from R")
+        np.testing.assert_allclose(
+            red_lag.high, r, rtol=RTOL, atol=ATOL, err_msg="crossreduce lag high diverges from R"
+        )
 
     def test_type_and_value(self, red_lag):
         assert red_lag.type == "lag"

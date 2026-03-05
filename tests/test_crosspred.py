@@ -13,7 +13,8 @@ def simple_fit():
     np.random.seed(42)
     x = np.random.randn(200) * 5 + 20
     cb = crossbasis(
-        x, lag=5,
+        x,
+        lag=5,
         argvar={"fun": "ns", "df": 3},
         arglag={"fun": "ns", "df": 2},
     )
@@ -107,6 +108,7 @@ class TestCrosspred:
 class TestCrosspredOneBasis:
     def test_onebasis_pred(self):
         from pydlnm.basis import onebasis
+
         np.random.seed(42)
         x = np.random.randn(100) * 5 + 20
         ob = onebasis(x, fun="ns", df=4)

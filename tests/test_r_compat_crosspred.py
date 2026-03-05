@@ -12,14 +12,13 @@ All fixtures are produced by R dlnm::crosspred().
 
 import numpy as np
 import pytest
-
-import pydlnm
 from r_compat_helpers import (
-    FIXTURES_DIR,
     load_fixture_matrix,
     load_fixture_vector,
     require_fixtures,
 )
+
+import pydlnm
 
 RTOL = 1e-5
 ATOL = 1e-9
@@ -61,26 +60,30 @@ class TestCrosspredOverall:
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crosspred_allfit.csv")
     def test_allfit(self, pred):
         r = load_fixture_vector("crosspred_allfit.csv")
-        np.testing.assert_allclose(pred.allfit, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crosspred allfit diverges from R")
+        np.testing.assert_allclose(
+            pred.allfit, r, rtol=RTOL, atol=ATOL, err_msg="crosspred allfit diverges from R"
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crosspred_allse.csv")
     def test_allse(self, pred):
         r = load_fixture_vector("crosspred_allse.csv")
-        np.testing.assert_allclose(pred.allse, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crosspred allse diverges from R")
+        np.testing.assert_allclose(
+            pred.allse, r, rtol=RTOL, atol=ATOL, err_msg="crosspred allse diverges from R"
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crosspred_alllow.csv")
     def test_alllow(self, pred):
         r = load_fixture_vector("crosspred_alllow.csv")
-        np.testing.assert_allclose(pred.alllow, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crosspred alllow diverges from R")
+        np.testing.assert_allclose(
+            pred.alllow, r, rtol=RTOL, atol=ATOL, err_msg="crosspred alllow diverges from R"
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crosspred_allhigh.csv")
     def test_allhigh(self, pred):
         r = load_fixture_vector("crosspred_allhigh.csv")
-        np.testing.assert_allclose(pred.allhigh, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crosspred allhigh diverges from R")
+        np.testing.assert_allclose(
+            pred.allhigh, r, rtol=RTOL, atol=ATOL, err_msg="crosspred allhigh diverges from R"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -92,26 +95,30 @@ class TestCrosspredMatrix:
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crosspred_matfit.csv")
     def test_matfit(self, pred):
         r = load_fixture_matrix("crosspred_matfit.csv")
-        np.testing.assert_allclose(pred.matfit, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crosspred matfit diverges from R")
+        np.testing.assert_allclose(
+            pred.matfit, r, rtol=RTOL, atol=ATOL, err_msg="crosspred matfit diverges from R"
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crosspred_matse.csv")
     def test_matse(self, pred):
         r = load_fixture_matrix("crosspred_matse.csv")
-        np.testing.assert_allclose(pred.matse, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crosspred matse diverges from R")
+        np.testing.assert_allclose(
+            pred.matse, r, rtol=RTOL, atol=ATOL, err_msg="crosspred matse diverges from R"
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crosspred_matlow.csv")
     def test_matlow(self, pred):
         r = load_fixture_matrix("crosspred_matlow.csv")
-        np.testing.assert_allclose(pred.matlow, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crosspred matlow diverges from R")
+        np.testing.assert_allclose(
+            pred.matlow, r, rtol=RTOL, atol=ATOL, err_msg="crosspred matlow diverges from R"
+        )
 
     @require_fixtures("synthetic_x.csv", "coef_12.csv", "crosspred_mathigh.csv")
     def test_mathigh(self, pred):
         r = load_fixture_matrix("crosspred_mathigh.csv")
-        np.testing.assert_allclose(pred.mathigh, r, rtol=RTOL, atol=ATOL,
-                                   err_msg="crosspred mathigh diverges from R")
+        np.testing.assert_allclose(
+            pred.mathigh, r, rtol=RTOL, atol=ATOL, err_msg="crosspred mathigh diverges from R"
+        )
 
 
 # ---------------------------------------------------------------------------

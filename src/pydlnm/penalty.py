@@ -6,8 +6,6 @@ or one-basis, to be used with penalised regression methods.
 
 from __future__ import annotations
 
-from typing import Optional, Union
-
 import numpy as np
 
 from pydlnm.utils import findrank
@@ -15,8 +13,8 @@ from pydlnm.utils import findrank
 
 def cb_pen(
     cb,
-    sp: Union[float, np.ndarray] = -1,
-    addSlag: Optional[Union[np.ndarray, list]] = None,
+    sp: float | np.ndarray = -1,
+    addSlag: np.ndarray | list | None = None,
 ) -> dict:
     """Build penalty matrices for a cross-basis or one-basis.
 
@@ -79,7 +77,7 @@ def cb_pen(
     # Rescale penalties
     for key in list(Slist.keys()):
         ev = np.linalg.eigvalsh(Slist[key])
-        max_ev = np.max(ev)
+        max_ev: float = float(np.max(ev))
         if max_ev > 0:
             Slist[key] = Slist[key] / max_ev
 
@@ -99,15 +97,15 @@ def cb_pen(
     if npen == 0:
         raise ValueError("no penalisation defined")
 
-    sp = np.atleast_1d(np.asarray(sp, dtype=float))
-    if sp.size == 1:
-        sp = np.repeat(sp, npen)
-    if sp.size != npen:
+    sp_arr: np.ndarray = np.atleast_1d(np.asarray(sp, dtype=float))  # type: ignore[assignment]
+    if sp_arr.size == 1:
+        sp_arr = np.repeat(sp_arr, npen)
+    if sp_arr.size != npen:
         raise ValueError("'sp' must be consistent with number of penalty terms")
 
     result = dict(Slist)
     result["rank"] = rank
-    result["sp"] = sp
+    result["sp"] = sp_arr
 
     return result
 
@@ -140,9 +138,9 @@ def _mkaddSlag(addSlag, df: np.ndarray) -> dict:
 
         # Rescale
         ev = np.linalg.eigvalsh(S)
-        max_ev = np.max(ev)
-        if max_ev > 0:
-            S = S / max_ev
+        max_ev2: float = float(np.max(ev))
+        if max_ev2 > 0:
+            S = S / max_ev2
 
         # Expand: I(df_var) kron S
         expanded = np.kron(np.eye(int(df[0])), S)

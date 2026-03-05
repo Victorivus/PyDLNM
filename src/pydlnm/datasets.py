@@ -17,7 +17,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 _DATA_DIR = Path(__file__).parent / "data"
 
 

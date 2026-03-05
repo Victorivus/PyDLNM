@@ -7,7 +7,6 @@ and optionally cumulative effects at each lag, with confidence intervals.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional, Union
 
 import numpy as np
 from scipy.stats import norm
@@ -67,7 +66,7 @@ class CrossPred:
     """
 
     predvar: np.ndarray
-    cen: Optional[float] = None
+    cen: float | None = None
     lag: np.ndarray = field(default_factory=lambda: np.array([0, 0]))
     bylag: int = 1
     coefficients: np.ndarray = field(default_factory=lambda: np.array([]))
@@ -76,30 +75,30 @@ class CrossPred:
     matse: np.ndarray = field(default_factory=lambda: np.array([]))
     allfit: np.ndarray = field(default_factory=lambda: np.array([]))
     allse: np.ndarray = field(default_factory=lambda: np.array([]))
-    cumfit: Optional[np.ndarray] = None
-    cumse: Optional[np.ndarray] = None
+    cumfit: np.ndarray | None = None
+    cumse: np.ndarray | None = None
     ci_level: float = 0.95
-    model_class: Optional[str] = None
-    model_link: Optional[str] = None
+    model_class: str | None = None
+    model_link: str | None = None
 
     # Exponentiated (log/logit link)
-    matRRfit: Optional[np.ndarray] = None
-    matRRlow: Optional[np.ndarray] = None
-    matRRhigh: Optional[np.ndarray] = None
-    allRRfit: Optional[np.ndarray] = None
-    allRRlow: Optional[np.ndarray] = None
-    allRRhigh: Optional[np.ndarray] = None
-    cumRRfit: Optional[np.ndarray] = None
-    cumRRlow: Optional[np.ndarray] = None
-    cumRRhigh: Optional[np.ndarray] = None
+    matRRfit: np.ndarray | None = None
+    matRRlow: np.ndarray | None = None
+    matRRhigh: np.ndarray | None = None
+    allRRfit: np.ndarray | None = None
+    allRRlow: np.ndarray | None = None
+    allRRhigh: np.ndarray | None = None
+    cumRRfit: np.ndarray | None = None
+    cumRRlow: np.ndarray | None = None
+    cumRRhigh: np.ndarray | None = None
 
     # Linear-scale
-    matlow: Optional[np.ndarray] = None
-    mathigh: Optional[np.ndarray] = None
-    alllow: Optional[np.ndarray] = None
-    allhigh: Optional[np.ndarray] = None
-    cumlow: Optional[np.ndarray] = None
-    cumhigh: Optional[np.ndarray] = None
+    matlow: np.ndarray | None = None
+    mathigh: np.ndarray | None = None
+    alllow: np.ndarray | None = None
+    allhigh: np.ndarray | None = None
+    cumlow: np.ndarray | None = None
+    cumhigh: np.ndarray | None = None
 
     def summary(self) -> str:
         """Return a textual summary of these predictions."""
@@ -153,7 +152,7 @@ def _mkXpred(type_: str, basis, at, predvar, predlag, cen):
         # rep(predvar, length(predlag)) in R
         varvec = np.tile(np.asarray(predvar, dtype=float), len(predlag))
     # rep(predlag, each=length(predvar)) in R
-    lagvec = np.repeat(np.asarray(predlag, dtype=float), len(predvar))
+    lagvec: np.ndarray = np.repeat(np.asarray(predlag, dtype=float), len(predvar))
 
     if type_ == "cb":
         argvar = dict(basis.argvar)
@@ -172,9 +171,22 @@ def _mkXpred(type_: str, basis, at, predvar, predlag, cen):
     elif type_ == "one":
         fun_name = basis.fun
         ob_kwargs = {}
-        for attr_name in ("df", "knots", "degree", "intercept", "Boundary_knots",
-                          "thr_value", "side", "values", "scale", "breaks", "ref",
-                          "S", "fx", "diff_order"):
+        for attr_name in (
+            "df",
+            "knots",
+            "degree",
+            "intercept",
+            "Boundary_knots",
+            "thr_value",
+            "side",
+            "values",
+            "scale",
+            "breaks",
+            "ref",
+            "S",
+            "fx",
+            "diff_order",
+        ):
             val = getattr(basis, attr_name, None)
             if val is not None:
                 ob_kwargs[attr_name] = val
@@ -192,16 +204,16 @@ def _mkXpred(type_: str, basis, at, predvar, predlag, cen):
 def crosspred(
     basis,
     model=None,
-    coef: Optional[np.ndarray] = None,
-    vcov: Optional[np.ndarray] = None,
-    model_link: Optional[str] = None,
-    at: Optional[Union[np.ndarray, list]] = None,
-    from_val: Optional[float] = None,
-    to_val: Optional[float] = None,
-    by: Optional[float] = None,
-    lag: Optional[Union[int, np.ndarray]] = None,
+    coef: np.ndarray | None = None,
+    vcov: np.ndarray | None = None,
+    model_link: str | None = None,
+    at: np.ndarray | list | None = None,
+    from_val: float | None = None,
+    to_val: float | None = None,
+    by: float | None = None,
+    lag: int | np.ndarray | None = None,
     bylag: int = 1,
-    cen: Optional[Union[float, bool]] = None,
+    cen: float | bool | None = None,
     ci_level: float = 0.95,
     cumul: bool = False,
 ) -> CrossPred:
@@ -267,15 +279,9 @@ def crosspred(
         raise TypeError("'basis' must be a CrossBasis or OneBasis object")
 
     # Original lag
-    if type_ == "cb":
-        origlag = basis.lag
-    else:
-        origlag = np.array([0, 0])
+    origlag = basis.lag if type_ == "cb" else np.array([0, 0])
 
-    if lag is None:
-        lag = origlag.copy()
-    else:
-        lag = mklag(lag)
+    lag = origlag.copy() if lag is None else mklag(lag)
 
     if not np.array_equal(lag, origlag) and cumul:
         raise ValueError("cumulative prediction not allowed for lag sub-period")
@@ -303,9 +309,9 @@ def crosspred(
 
     # Validate
     npar = basis.shape[1]
-    if len(coef) != npar or vcov.shape[0] != npar:
+    if len(coef) != npar or vcov.shape[0] != npar:  # type: ignore[arg-type,union-attr]
         raise ValueError(
-            f"coef/vcov dimensions ({len(coef)}, {vcov.shape}) not consistent "
+            f"coef/vcov dimensions ({len(coef)}, {vcov.shape}) not consistent "  # type: ignore[arg-type,union-attr]
             f"with basis matrix ({npar} columns)"
         )
 
@@ -328,9 +334,11 @@ def crosspred(
     # (n_lag, n_pred) then transpose to get (n_pred, n_lag).
     matfit = (Xpred @ coef).reshape(len(predlag), len(predvar)).T
     # Standard errors: sqrt(diag(Xpred @ vcov @ Xpred.T))
-    matse = np.sqrt(
-        np.maximum(0, np.sum((Xpred @ vcov) * Xpred, axis=1))
-    ).reshape(len(predlag), len(predvar)).T
+    matse = (
+        np.sqrt(np.maximum(0, np.sum((Xpred @ vcov) * Xpred, axis=1)))
+        .reshape(len(predlag), len(predvar))
+        .T
+    )
 
     # --- Overall + cumulative predictions ---
     predlag_int = seqlag(lag)  # integer lags only
@@ -360,8 +368,8 @@ def crosspred(
         cen=cen_val,
         lag=lag,
         bylag=bylag,
-        coefficients=coef,
-        vcov=vcov,
+        coefficients=coef,  # type: ignore[arg-type]
+        vcov=vcov,  # type: ignore[arg-type]
         matfit=matfit,
         matse=matse,
         allfit=allfit,
@@ -402,6 +410,7 @@ def crosspred(
 # ---------------------------------------------------------------------------
 # Helpers for extracting from statsmodels
 # ---------------------------------------------------------------------------
+
 
 def _extract_from_model(model, model_link=None):
     """Extract coefficients, vcov, and link from a statsmodels model."""
@@ -473,6 +482,5 @@ def _find_basis_indices(param_names, n_params, basis):
         return np.arange(total - n_params, total)
 
     raise ValueError(
-        f"Cannot find {n_params} cross-basis parameters in model "
-        f"with {total} parameters"
+        f"Cannot find {n_params} cross-basis parameters in model with {total} parameters"
     )

@@ -2,13 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Optional, Union
-
 import numpy as np
-import pandas as pd
 
 
-def mklag(lag: Union[int, list, np.ndarray]) -> np.ndarray:
+def mklag(lag: int | list | np.ndarray) -> np.ndarray:
     """Normalise a lag specification to a two-element integer array ``[lag_min, lag_max]``.
 
     Parameters
@@ -28,14 +25,14 @@ def mklag(lag: Union[int, list, np.ndarray]) -> np.ndarray:
     ValueError
         If *lag* is not numeric or has length > 2, or if ``lag[0] > lag[1]``.
     """
-    lag = np.atleast_1d(np.asarray(lag, dtype=float)).ravel()
-    if lag.size > 2:
+    lag_arr = np.atleast_1d(np.asarray(lag, dtype=float)).ravel()
+    if lag_arr.size > 2:
         raise ValueError("'lag' must be an integer scalar or length-2 vector")
-    if lag.size == 1:
-        lag = np.array([lag[0], 0]) if lag[0] < 0 else np.array([0, lag[0]])
-    if lag[1] - lag[0] < 0:
+    if lag_arr.size == 1:
+        lag_arr = np.array([lag_arr[0], 0]) if lag_arr[0] < 0 else np.array([0, lag_arr[0]])
+    if lag_arr[1] - lag_arr[0] < 0:
         raise ValueError("lag[0] must be <= lag[1]")
-    return np.round(lag[:2]).astype(int)
+    return np.round(lag_arr[:2]).astype(int)
 
 
 def seqlag(lag: np.ndarray, by: int = 1) -> np.ndarray:
@@ -58,12 +55,12 @@ def seqlag(lag: np.ndarray, by: int = 1) -> np.ndarray:
 
 
 def mkat(
-    at: Optional[Union[np.ndarray, list]] = None,
-    from_val: Optional[float] = None,
-    to_val: Optional[float] = None,
-    by: Optional[float] = None,
-    range_val: np.ndarray = None,
-    lag: np.ndarray = None,
+    at: np.ndarray | list | None = None,
+    from_val: float | None = None,
+    to_val: float | None = None,
+    by: float | None = None,
+    range_val: np.ndarray | None = None,
+    lag: np.ndarray | None = None,
     bylag: int = 1,
 ) -> np.ndarray:
     """Build the vector of predictor values for which to compute predictions.
@@ -90,36 +87,33 @@ def mkat(
         1-D array of predictor values, or 2-D matrix if *at* is a matrix.
     """
     if at is None:
-        if from_val is None:
-            from_val = range_val[0]
-        if to_val is None:
-            to_val = range_val[1]
+        fv: float = from_val if from_val is not None else float(range_val[0])  # type: ignore[index]
+        tv: float = to_val if to_val is not None else float(range_val[1])  # type: ignore[index]
         if by is None:
             nobs = 50
-            step = (to_val - from_val) / nobs
-            at = np.linspace(from_val, to_val, nobs + 1)
+            at = np.linspace(fv, tv, nobs + 1)
             # Make "pretty" values
-            nice = _pretty(np.array([from_val, to_val]), n=nobs)
-            nice = nice[(nice >= from_val) & (nice <= to_val)]
+            nice = _pretty(np.array([fv, tv]), n=nobs)
+            nice = nice[(nice >= fv) & (nice <= tv)]
             if len(nice) > 0:
                 at = nice
         else:
-            nice = _pretty(np.array([from_val, to_val]), n=max(1, int((to_val - from_val) / by)))
-            nice = nice[(nice >= from_val) & (nice <= to_val)]
+            nice = _pretty(np.array([fv, tv]), n=max(1, int((tv - fv) / by)))
+            nice = nice[(nice >= fv) & (nice <= tv)]
             if len(nice) > 0:
-                at = np.arange(nice[0], to_val + by * 0.5, by)
-                at = at[at <= to_val]
+                at = np.arange(nice[0], tv + by * 0.5, by)
+                at = at[at <= tv]  # type: ignore[operator]
             else:
-                at = np.arange(from_val, to_val + by * 0.5, by)
+                at = np.arange(fv, tv + by * 0.5, by)
     elif isinstance(at, np.ndarray) and at.ndim == 2:
-        lag_len = int(lag[1] - lag[0]) + 1
+        lag_len = int(lag[1] - lag[0]) + 1  # type: ignore[index]
         if at.shape[1] != lag_len:
             raise ValueError(f"matrix 'at' must have ncol=diff(lag)+1={lag_len}")
         if bylag != 1:
             raise ValueError("'bylag!=1 not allowed with 'at' in matrix form")
     else:
         at = np.sort(np.unique(np.asarray(at, dtype=float)))
-    return at
+    return at  # type: ignore[return-value]
 
 
 def _pretty(x: np.ndarray, n: int = 5) -> np.ndarray:
@@ -135,11 +129,11 @@ def _pretty(x: np.ndarray, n: int = 5) -> np.ndarray:
 
 
 def mkcen(
-    cen: Optional[Union[float, bool]] = None,
+    cen: float | bool | None = None,
     type_: str = "cb",
     basis=None,
-    range_val: np.ndarray = None,
-) -> Optional[float]:
+    range_val: np.ndarray | None = None,
+) -> float | None:
     """Determine the centering value for predictions.
 
     Parameters
@@ -209,7 +203,7 @@ def mkcen(
     return cen
 
 
-def lag_matrix(x: np.ndarray, lag: np.ndarray, group: Optional[np.ndarray] = None) -> np.ndarray:
+def lag_matrix(x: np.ndarray, lag: np.ndarray, group: np.ndarray | None = None) -> np.ndarray:
     """Create a matrix of lagged values from a time-series vector.
 
     Equivalent to ``tsModel::Lag`` in R.
@@ -238,7 +232,7 @@ def lag_matrix(x: np.ndarray, lag: np.ndarray, group: Optional[np.ndarray] = Non
             if l >= 0:
                 result[l:, j] = x[: n - l]
             else:
-                result[:n + l, j] = x[-l:]
+                result[: n + l, j] = x[-l:]
     else:
         groups = np.unique(group)
         for g in groups:
@@ -250,7 +244,7 @@ def lag_matrix(x: np.ndarray, lag: np.ndarray, group: Optional[np.ndarray] = Non
                 if l >= 0:
                     result[idx[l:], j] = xg[: ng - l]
                 else:
-                    result[idx[:ng + l], j] = xg[-l:]
+                    result[idx[: ng + l], j] = xg[-l:]
     return result
 
 
@@ -276,14 +270,14 @@ def tensor_product(A: np.ndarray, B: np.ndarray) -> np.ndarray:
     q = B.shape[1]
     result = np.empty((n, p * q))
     for j in range(p):
-        result[:, j * q: (j + 1) * q] = A[:, j: j + 1] * B
+        result[:, j * q : (j + 1) * q] = A[:, j : j + 1] * B
     return result
 
 
 def exphist(
     exp: np.ndarray,
-    times: Optional[np.ndarray] = None,
-    lag: Optional[Union[int, np.ndarray]] = None,
+    times: np.ndarray | None = None,
+    lag: int | np.ndarray | None = None,
     fill: float = 0.0,
 ) -> np.ndarray:
     """Build exposure history matrices from an exposure profile.
@@ -312,10 +306,7 @@ def exphist(
     """
     exp = np.asarray(exp, dtype=float).ravel()
 
-    if lag is None:
-        lag = np.array([0, len(exp) - 1])
-    else:
-        lag = mklag(lag)
+    lag = np.array([0, len(exp) - 1]) if lag is None else mklag(lag)
 
     if times is None:
         times = np.arange(1, len(exp) + 1)
@@ -323,15 +314,15 @@ def exphist(
         times = np.round(np.asarray(times, dtype=float)).astype(int)
 
     # Extend exp on both sides
-    left = max(0, int(lag[1]) + 1 - int(times.min()))
-    right = max(0, int(times.max()) - len(exp) - int(lag[0]))
+    left = max(0, int(lag[1]) + 1 - int(times.min()))  # type: ignore[union-attr]
+    right = max(0, int(times.max()) - len(exp) - int(lag[0]))  # type: ignore[union-attr]
     exp_ext = np.concatenate([np.full(left, fill), exp, np.full(right, fill)])
 
     lag_seq = seqlag(lag)
     n_lags = len(lag_seq)
-    hist = np.empty((len(times), n_lags))
+    hist = np.empty((len(times), n_lags))  # type: ignore[arg-type]
 
-    for i, t in enumerate(times):
+    for i, t in enumerate(times):  # type: ignore[union-attr,arg-type]
         start = int(t - lag[0] + left) - 1  # 0-indexed
         for j, l in enumerate(lag_seq):
             idx = start - int(l)

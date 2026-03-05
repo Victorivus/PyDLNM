@@ -7,7 +7,7 @@ cumulative effect plots.
 
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import Any
 
 import numpy as np
 from scipy.stats import norm
@@ -17,14 +17,14 @@ from pydlnm.utils import seqlag
 
 def plot_crosspred(
     pred,
-    ptype: Optional[str] = None,
-    var: Optional[Union[float, list]] = None,
-    lag: Optional[Union[int, list]] = None,
+    ptype: str | None = None,
+    var: float | list | None = None,
+    lag: int | list | None = None,
     ci: str = "area",
-    ci_level: Optional[float] = None,
+    ci_level: float | None = None,
     cumul: bool = False,
-    exp: Optional[bool] = None,
-    title: Optional[str] = None,
+    exp: bool | None = None,
+    title: str | None = None,
     figsize: tuple = (8, 6),
     ax=None,
     **kwargs,
@@ -91,9 +91,7 @@ def plot_crosspred(
     allse = pred.allse.copy()
 
     if cumul and pred.cumfit is None:
-        raise ValueError(
-            "Cumulative outcomes require cumul=True in crosspred()"
-        )
+        raise ValueError("Cumulative outcomes require cumul=True in crosspred()")
 
     mathigh = matfit + z * matse
     matlow = matfit - z * matse
@@ -103,9 +101,7 @@ def plot_crosspred(
 
     # Exponentiate?
     do_exp = False
-    if exp is True:
-        do_exp = True
-    elif exp is None and pred.model_link in ("log", "logit"):
+    if exp is True or exp is None and pred.model_link in ("log", "logit"):
         do_exp = True
 
     if do_exp:
@@ -123,15 +119,15 @@ def plot_crosspred(
     # --- SLICES ---
     if ptype == "slices":
         if var is None and lag is None:
-            raise ValueError(
-                "at least 'var' or 'lag' must be provided for ptype='slices'"
-            )
-        n_plots = (len(np.atleast_1d(lag)) if lag is not None else 0) + \
-                  (len(np.atleast_1d(var)) if var is not None else 0)
+            raise ValueError("at least 'var' or 'lag' must be provided for ptype='slices'")
+        n_plots = (len(np.atleast_1d(lag)) if lag is not None else 0) + (
+            len(np.atleast_1d(var)) if var is not None else 0
+        )
 
-        fig, axes = plt.subplots(1, n_plots, figsize=(figsize[0] * n_plots / 2, figsize[1]),
-                                 squeeze=False)
-        axes = axes.ravel()
+        fig, _axes_raw = plt.subplots(
+            1, n_plots, figsize=(figsize[0] * n_plots / 2, figsize[1]), squeeze=False
+        )
+        axes: Any = _axes_raw.ravel()
         plot_idx = 0
 
         # Lag-specific (exposure-response at fixed lag)
@@ -142,9 +138,16 @@ def plot_crosspred(
                     raise ValueError(f"lag={l_val} not in prediction lags")
                 l_idx = l_idx[0]
                 ax_cur = axes[plot_idx]
-                _plot_ci(ax_cur, predvar, matfit[:, l_idx],
-                         mathigh[:, l_idx], matlow[:, l_idx],
-                         ci, noeff, **kwargs)
+                _plot_ci(
+                    ax_cur,
+                    predvar,
+                    matfit[:, l_idx],
+                    mathigh[:, l_idx],
+                    matlow[:, l_idx],
+                    ci,
+                    noeff,
+                    **kwargs,
+                )
                 ax_cur.set_xlabel("Var")
                 ax_cur.set_ylabel("Effect")
                 ax_cur.set_title(f"Lag = {l_val}" if title is None else title)
@@ -158,9 +161,16 @@ def plot_crosspred(
                     v_idx = np.array([np.argmin(np.abs(predvar - v_val))])
                 v_idx = v_idx[0]
                 ax_cur = axes[plot_idx]
-                _plot_ci(ax_cur, lag_seq, matfit[v_idx, :],
-                         mathigh[v_idx, :], matlow[v_idx, :],
-                         ci, noeff, **kwargs)
+                _plot_ci(
+                    ax_cur,
+                    lag_seq,
+                    matfit[v_idx, :],
+                    mathigh[v_idx, :],
+                    matlow[v_idx, :],
+                    ci,
+                    noeff,
+                    **kwargs,
+                )
                 ax_cur.set_xlabel("Lag")
                 ax_cur.set_ylabel("Effect")
                 ax_cur.set_title(f"Var = {v_val}" if title is None else title)
@@ -201,8 +211,7 @@ def plot_crosspred(
         fig = plt.figure(figsize=figsize)
         ax3 = fig.add_subplot(111, projection="3d")
         X, Y = np.meshgrid(predvar, lag_seq)
-        ax3.plot_surface(X, Y, matfit.T, cmap="coolwarm", alpha=0.85,
-                         edgecolor="none")
+        ax3.plot_surface(X, Y, matfit.T, cmap="coolwarm", alpha=0.85, edgecolor="none")
         ax3.set_xlabel("Var")
         ax3.set_ylabel("Lag")
         ax3.set_zlabel("Effect")
@@ -236,9 +245,9 @@ def _plot_ci(ax, x, fit, high, low, ci, noeff, **kwargs):
 def plot_crossreduce(
     red,
     ci: str = "area",
-    ci_level: Optional[float] = None,
-    exp: Optional[bool] = None,
-    title: Optional[str] = None,
+    ci_level: float | None = None,
+    exp: bool | None = None,
+    title: str | None = None,
     figsize: tuple = (8, 6),
     ax=None,
     **kwargs,
@@ -281,9 +290,7 @@ def plot_crossreduce(
     noeff = 0
 
     do_exp = False
-    if exp is True:
-        do_exp = True
-    elif exp is None and red.model_link in ("log", "logit"):
+    if exp is True or exp is None and red.model_link in ("log", "logit"):
         do_exp = True
 
     if do_exp:

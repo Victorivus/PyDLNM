@@ -4,7 +4,6 @@ These tests mimic typical usage patterns from the R dlnm package examples.
 """
 
 import numpy as np
-import pytest
 
 import pydlnm
 
@@ -35,7 +34,9 @@ class TestTimeSeriesWorkflow:
 
         # Cross-predictions
         pred = pydlnm.crosspred(
-            cb, coef=coef, vcov=vcov,
+            cb,
+            coef=coef,
+            vcov=vcov,
             at=np.arange(-20, 35, dtype=float),
             cen=21.0,
         )
@@ -49,16 +50,23 @@ class TestTimeSeriesWorkflow:
 
         # Cross-reduction: overall
         red = pydlnm.crossreduce(
-            cb, coef=coef, vcov=vcov,
-            type="overall", cen=21.0,
+            cb,
+            coef=coef,
+            vcov=vcov,
+            type="overall",
+            cen=21.0,
         )
         assert red.type == "overall"
         assert len(red.fit) > 0
 
         # Cross-reduction: var-specific
         red_var = pydlnm.crossreduce(
-            cb, coef=coef, vcov=vcov,
-            type="var", value=30.0, cen=21.0,
+            cb,
+            coef=coef,
+            vcov=vcov,
+            type="var",
+            value=30.0,
+            cen=21.0,
         )
         assert red_var.type == "var"
         assert red_var.value == 30.0
@@ -88,10 +96,9 @@ class TestDrugWorkflow:
         # Build exposure history matrix
         dose_cols = ["day1.7", "day8.14", "day15.21", "day22.28"]
         # Expand weekly doses to daily (4 weeks * 7 days = 28 days)
-        exp_mat = np.column_stack([
-            np.repeat(df[col].values.reshape(-1, 1), 7, axis=1)
-            for col in dose_cols
-        ])
+        exp_mat = np.column_stack(
+            [np.repeat(df[col].values.reshape(-1, 1), 7, axis=1) for col in dose_cols]
+        )
         assert exp_mat.shape == (200, 28)
 
         cb = pydlnm.crossbasis(

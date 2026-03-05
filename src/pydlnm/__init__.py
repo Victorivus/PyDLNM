@@ -18,11 +18,11 @@ Original R package: https://github.com/gasparrini/dlnm
 """
 
 from pydlnm.basis import (
+    bs,
     cr,
     integer,
     lin,
     ns,
-    bs,
     onebasis,
     poly,
     ps,

@@ -8,9 +8,9 @@ Run Rscript tests/fixtures/generate_fixtures.R to regenerate fixtures.
 
 import numpy as np
 import pytest
+from r_compat_helpers import load_fixture_matrix, require_fixtures
 
 import pydlnm
-from r_compat_helpers import FIXTURES_DIR, load_fixture_matrix, require_fixtures
 
 RTOL = 1e-5
 ATOL = 1e-9

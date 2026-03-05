@@ -13,7 +13,8 @@ def cb_with_coef():
     np.random.seed(42)
     x = np.random.randn(200) * 5 + 20
     cb = crossbasis(
-        x, lag=10,
+        x,
+        lag=10,
         argvar={"fun": "ns", "df": 3},
         arglag={"fun": "ns", "df": 3},
     )

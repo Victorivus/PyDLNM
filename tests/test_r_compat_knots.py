@@ -5,10 +5,9 @@ exactly (not just approximately), so we use a tighter tolerance here.
 """
 
 import numpy as np
-import pytest
+from r_compat_helpers import load_fixture_vector, require_fixtures
 
 import pydlnm
-from r_compat_helpers import load_fixture_vector, require_fixtures
 
 RTOL = 1e-10
 ATOL = 1e-12
@@ -19,15 +18,17 @@ class TestLogknots:
     def test_lag10_nk3(self):
         r_knots = load_fixture_vector("logknots_lag10_nk3.csv")
         py_knots = pydlnm.logknots(10, nk=3)
-        np.testing.assert_allclose(py_knots, r_knots, rtol=RTOL, atol=ATOL,
-                                   err_msg="logknots(10, nk=3) diverges from R")
+        np.testing.assert_allclose(
+            py_knots, r_knots, rtol=RTOL, atol=ATOL, err_msg="logknots(10, nk=3) diverges from R"
+        )
 
     @require_fixtures("logknots_lag21_nk4.csv")
     def test_lag21_nk4(self):
         r_knots = load_fixture_vector("logknots_lag21_nk4.csv")
         py_knots = pydlnm.logknots(21, nk=4)
-        np.testing.assert_allclose(py_knots, r_knots, rtol=RTOL, atol=ATOL,
-                                   err_msg="logknots(21, nk=4) diverges from R")
+        np.testing.assert_allclose(
+            py_knots, r_knots, rtol=RTOL, atol=ATOL, err_msg="logknots(21, nk=4) diverges from R"
+        )
 
     # -----------------------------------------------------------------------
     # Structural invariants (no fixture needed)
@@ -58,15 +59,25 @@ class TestEqualknots:
     def test_lag30_nk3(self):
         r_knots = load_fixture_vector("equalknots_lag30_nk3.csv")
         py_knots = pydlnm.equalknots(np.arange(0, 31, dtype=float), nk=3)
-        np.testing.assert_allclose(py_knots, r_knots, rtol=RTOL, atol=ATOL,
-                                   err_msg="equalknots(0:30, nk=3) diverges from R")
+        np.testing.assert_allclose(
+            py_knots,
+            r_knots,
+            rtol=RTOL,
+            atol=ATOL,
+            err_msg="equalknots(0:30, nk=3) diverges from R",
+        )
 
     @require_fixtures("equalknots_lag30_nk4.csv")
     def test_lag30_nk4(self):
         r_knots = load_fixture_vector("equalknots_lag30_nk4.csv")
         py_knots = pydlnm.equalknots(np.arange(0, 31, dtype=float), nk=4)
-        np.testing.assert_allclose(py_knots, r_knots, rtol=RTOL, atol=ATOL,
-                                   err_msg="equalknots(0:30, nk=4) diverges from R")
+        np.testing.assert_allclose(
+            py_knots,
+            r_knots,
+            rtol=RTOL,
+            atol=ATOL,
+            err_msg="equalknots(0:30, nk=4) diverges from R",
+        )
 
     def test_returns_nk_knots(self):
         x = np.arange(0, 31, dtype=float)
@@ -77,8 +88,12 @@ class TestEqualknots:
         x = np.arange(0, 31, dtype=float)
         knots = pydlnm.equalknots(x, nk=4)
         diffs = np.diff(knots)
-        np.testing.assert_allclose(diffs, diffs[0] * np.ones_like(diffs),
-                                   rtol=1e-10, err_msg="equalknots not equally spaced")
+        np.testing.assert_allclose(
+            diffs,
+            diffs[0] * np.ones_like(diffs),
+            rtol=1e-10,
+            err_msg="equalknots not equally spaced",
+        )
 
     def test_knots_within_range(self):
         x = np.arange(0, 31, dtype=float)
