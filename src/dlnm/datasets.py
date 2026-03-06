@@ -34,7 +34,7 @@ def load_chicagoNMMAPS() -> pd.DataFrame:
 
     Examples
     --------
-    >>> from pydlnm import load_chicagoNMMAPS
+    >>> from dlnm import load_chicagoNMMAPS
     >>> df = load_chicagoNMMAPS()
     >>> df.shape
     (5114, 14)
@@ -57,7 +57,7 @@ def load_drug() -> pd.DataFrame:
 
     Examples
     --------
-    >>> from pydlnm import load_drug
+    >>> from dlnm import load_drug
     >>> df = load_drug()
     >>> df.shape
     (200, 7)
@@ -78,7 +78,7 @@ def load_nested() -> pd.DataFrame:
 
     Examples
     --------
-    >>> from pydlnm import load_nested
+    >>> from dlnm import load_nested
     >>> df = load_nested()
     >>> df.shape
     (600, 14)

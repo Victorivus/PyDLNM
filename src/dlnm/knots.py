@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from pydlnm.utils import mklag
+from dlnm.utils import mklag
 
 
 def logknots(
@@ -50,7 +50,7 @@ def logknots(
 
     Examples
     --------
-    >>> from pydlnm import logknots
+    >>> from dlnm import logknots
     >>> logknots(30, nk=3)
     array([ 1.47...,  5.47..., 15.30...])
     """
@@ -114,7 +114,7 @@ def equalknots(
 
     Examples
     --------
-    >>> from pydlnm import equalknots
+    >>> from dlnm import equalknots
     >>> equalknots(np.arange(0, 31), nk=3)
     array([ 7.5, 15. , 22.5])
     """

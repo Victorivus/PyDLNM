@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from pydlnm.utils import findrank
+from dlnm.utils import findrank
 
 
 def cb_pen(
@@ -38,8 +38,8 @@ def cb_pen(
     ValueError
         If *cb* is not a valid basis, or dimensions are inconsistent.
     """
-    from pydlnm.basis import OneBasis
-    from pydlnm.crossbasis import CrossBasis
+    from dlnm.basis import OneBasis
+    from dlnm.crossbasis import CrossBasis
 
     is_onebasis = isinstance(cb, OneBasis)
     is_crossbasis = isinstance(cb, CrossBasis)

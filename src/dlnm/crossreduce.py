@@ -12,9 +12,9 @@ from dataclasses import dataclass, field
 import numpy as np
 from scipy.stats import norm
 
-from pydlnm.basis import OneBasis, onebasis
-from pydlnm.crossbasis import CrossBasis
-from pydlnm.utils import mkat, mkcen, mklag, seqlag
+from dlnm.basis import OneBasis, onebasis
+from dlnm.crossbasis import CrossBasis
+from dlnm.utils import mkat, mkcen, mklag, seqlag
 
 
 @dataclass
@@ -164,7 +164,7 @@ def crossreduce(
 
     # --- Extract coefficients ---
     if model is not None:
-        from pydlnm.crosspred import _extract_from_model, _find_basis_indices, _get_param_names
+        from dlnm.crosspred import _extract_from_model, _find_basis_indices, _get_param_names
 
         coef_all, vcov_all, model_link = _extract_from_model(model, model_link)
         param_names = _get_param_names(model)

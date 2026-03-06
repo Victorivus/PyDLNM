@@ -1,8 +1,8 @@
-"""Tests for pydlnm.datasets module."""
+"""Tests for dlnm.datasets module."""
 
 import pandas as pd
 
-from pydlnm.datasets import load_chicagoNMMAPS, load_drug, load_nested
+from dlnm.datasets import load_chicagoNMMAPS, load_drug, load_nested
 
 
 class TestChicagoNMMAPS:

@@ -12,7 +12,7 @@ from typing import Any
 import numpy as np
 from scipy.stats import norm
 
-from pydlnm.utils import seqlag
+from dlnm.utils import seqlag
 
 
 def plot_crosspred(

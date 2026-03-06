@@ -1,4 +1,4 @@
-"""R compatibility tests for pydlnm.crosspred.
+"""R compatibility tests for dlnm.crosspred.
 
 The reference crossbasis is ns(df=4) x ns(df=3) with lag=10, applied to the
 200-element synthetic_x vector.  Predictions use:
@@ -18,7 +18,7 @@ from r_compat_helpers import (
     require_fixtures,
 )
 
-import pydlnm
+import dlnm
 
 RTOL = 1e-5
 ATOL = 1e-9
@@ -31,7 +31,7 @@ CEN_VAL = 20.0
 @pytest.fixture(scope="module")
 def cb_ns_ns(synthetic_x):
     """Shared crossbasis for all crosspred tests."""
-    return pydlnm.crossbasis(
+    return dlnm.crossbasis(
         synthetic_x,
         lag=10,
         argvar={"fun": "ns", "df": 4},
@@ -42,7 +42,7 @@ def cb_ns_ns(synthetic_x):
 @pytest.fixture(scope="module")
 def pred(cb_ns_ns, coef_12, vcov_12):
     """Shared crosspred result."""
-    return pydlnm.crosspred(
+    return dlnm.crosspred(
         cb_ns_ns,
         coef=coef_12,
         vcov=vcov_12,

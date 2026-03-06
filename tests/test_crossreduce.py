@@ -1,10 +1,10 @@
-"""Tests for pydlnm.crossreduce module."""
+"""Tests for dlnm.crossreduce module."""
 
 import numpy as np
 import pytest
 
-from pydlnm.crossbasis import crossbasis
-from pydlnm.crossreduce import CrossReduce, crossreduce
+from dlnm.crossbasis import crossbasis
+from dlnm.crossreduce import CrossReduce, crossreduce
 
 
 @pytest.fixture

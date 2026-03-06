@@ -1,9 +1,9 @@
-"""Tests for pydlnm.crossbasis module."""
+"""Tests for dlnm.crossbasis module."""
 
 import numpy as np
 import pytest
 
-from pydlnm.crossbasis import CrossBasis, crossbasis
+from dlnm.crossbasis import CrossBasis, crossbasis
 
 
 @pytest.fixture

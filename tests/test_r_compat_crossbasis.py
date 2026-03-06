@@ -1,4 +1,4 @@
-"""R compatibility tests for pydlnm.crossbasis.
+"""R compatibility tests for dlnm.crossbasis.
 
 Compares the full crossbasis matrix (element-by-element) against golden
 fixtures produced by R's dlnm::crossbasis().
@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 from r_compat_helpers import load_fixture_matrix, require_fixtures
 
-import pydlnm
+import dlnm
 
 RTOL = 1e-5
 ATOL = 1e-9
@@ -31,7 +31,7 @@ class TestCrossbasisR:
     @require_fixtures("synthetic_x.csv", "crossbasis_ns_df4_ns_df3_lag10.csv")
     def test_ns_ns_lag10(self, synthetic_x):
         """Primary case: ns(df=4) x ns(df=3), lag=10 → 12 columns."""
-        cb = pydlnm.crossbasis(
+        cb = dlnm.crossbasis(
             synthetic_x,
             lag=10,
             argvar={"fun": "ns", "df": 4},
@@ -43,7 +43,7 @@ class TestCrossbasisR:
     @require_fixtures("synthetic_x.csv", "crossbasis_bs_df4_ns_df3_lag10.csv")
     def test_bs_ns_lag10(self, synthetic_x):
         """bs(df=4) x ns(df=3), lag=10 → 12 columns."""
-        cb = pydlnm.crossbasis(
+        cb = dlnm.crossbasis(
             synthetic_x,
             lag=10,
             argvar={"fun": "bs", "df": 4},
@@ -55,7 +55,7 @@ class TestCrossbasisR:
     @require_fixtures("synthetic_x.csv", "crossbasis_lin_ns_df3_lag10.csv")
     def test_lin_ns_lag10(self, synthetic_x):
         """lin x ns(df=3), lag=10 → 3 columns."""
-        cb = pydlnm.crossbasis(
+        cb = dlnm.crossbasis(
             synthetic_x,
             lag=10,
             argvar={"fun": "lin"},
@@ -67,7 +67,7 @@ class TestCrossbasisR:
     @require_fixtures("synthetic_x.csv", "crossbasis_ns_df4_strata_df2_lag10.csv")
     def test_ns_strata_lag10(self, synthetic_x):
         """ns(df=4) x strata(df=2), lag=10 → 8 columns."""
-        cb = pydlnm.crossbasis(
+        cb = dlnm.crossbasis(
             synthetic_x,
             lag=10,
             argvar={"fun": "ns", "df": 4},
@@ -79,7 +79,7 @@ class TestCrossbasisR:
     @require_fixtures("synthetic_x.csv", "crossbasis_ns_df4_ns_df3_lag0_21.csv")
     def test_ns_ns_lag0_21(self, synthetic_x):
         """ns(df=4) x ns(df=3), lag=[0,21] → 12 columns, 22 lag periods."""
-        cb = pydlnm.crossbasis(
+        cb = dlnm.crossbasis(
             synthetic_x,
             lag=[0, 21],
             argvar={"fun": "ns", "df": 4},
@@ -94,7 +94,7 @@ class TestCrossbasisR:
     # -----------------------------------------------------------------------
 
     def test_attributes_preserved(self, synthetic_x):
-        cb = pydlnm.crossbasis(
+        cb = dlnm.crossbasis(
             synthetic_x,
             lag=10,
             argvar={"fun": "ns", "df": 4},
@@ -106,7 +106,7 @@ class TestCrossbasisR:
         np.testing.assert_array_equal(cb.df, [4, 3])
 
     def test_range_matches_data(self, synthetic_x):
-        cb = pydlnm.crossbasis(
+        cb = dlnm.crossbasis(
             synthetic_x,
             lag=10,
             argvar={"fun": "ns", "df": 4},
@@ -117,7 +117,7 @@ class TestCrossbasisR:
 
     def test_no_nan_after_lag_warmup(self, synthetic_x):
         lag = 10
-        cb = pydlnm.crossbasis(
+        cb = dlnm.crossbasis(
             synthetic_x,
             lag=lag,
             argvar={"fun": "ns", "df": 4},

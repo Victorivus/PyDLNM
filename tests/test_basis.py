@@ -1,9 +1,9 @@
-"""Tests for pydlnm.basis module."""
+"""Tests for dlnm.basis module."""
 
 import numpy as np
 import pytest
 
-from pydlnm.basis import (
+from dlnm.basis import (
     OneBasis,
     bs,
     cr,

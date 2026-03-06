@@ -1,9 +1,9 @@
-"""Tests for pydlnm.knots module."""
+"""Tests for dlnm.knots module."""
 
 import numpy as np
 import pytest
 
-from pydlnm.knots import equalknots, logknots
+from dlnm.knots import equalknots, logknots
 
 
 class TestLogknots:

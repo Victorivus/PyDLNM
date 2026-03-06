@@ -1,8 +1,8 @@
 # PyDLNM — Distributed Lag Non-Linear Models for Python
 
 [CI](https://github.com/Victorivus/PyDLNM/actions/workflows/ci.yml)
-[PyPI version](https://pypi.org/project/pydlnm/)
-[Python](https://pypi.org/project/pydlnm/)
+[PyPI version](https://pypi.org/project/dlnm/)
+[Python](https://pypi.org/project/dlnm/)
 [License: GPL v2+](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
 A Python implementation of **Distributed Lag Non-Linear Models (DLNMs)**, based on the widely-used R package `[dlnm](https://github.com/gasparrini/dlnm)` by Antonio Gasparrini, Ben Armstrong, and Fabian Scheipl.
@@ -24,7 +24,7 @@ All core algorithms and methodology are from the original R implementation. If y
 ## Installation
 
 ```bash
-pip install pydlnm
+pip install dlnm
 ```
 
 For development:
@@ -40,7 +40,7 @@ pip install -e ".[dev]"
 ```python
 import numpy as np
 import statsmodels.api as sm
-from pydlnm import crossbasis, crosspred, logknots, load_chicagoNMMAPS
+from dlnm import crossbasis, crosspred, logknots, load_chicagoNMMAPS
 
 # Load example data (Chicago NMMAPS)
 df = load_chicagoNMMAPS()
@@ -112,7 +112,7 @@ y = df["death"].values
 ### Exposure-Response at a Specific Lag
 
 ```python
-from pydlnm import crossbasis, crosspred, plot_crosspred
+from dlnm import crossbasis, crosspred, plot_crosspred
 
 # After fitting a model...
 pred = crosspred(cb, coef=coef, vcov=vcov, at=np.arange(-20, 35), cen=21)
@@ -140,7 +140,7 @@ fig = plot_crosspred(pred, ptype="overall")
 ### Reduced to One Dimension
 
 ```python
-from pydlnm import crossreduce, plot_crossreduce
+from dlnm import crossreduce, plot_crossreduce
 
 # Overall cumulative exposure-response
 red_overall = crossreduce(cb, coef=coef, vcov=vcov, type="overall", cen=21)
@@ -157,7 +157,7 @@ PyDLNM is designed to produce results numerically identical to R's `dlnm` packag
 
 ### 1. Natural spline basis — linear extrapolation outside boundary knots
 
-**Location:** `[src/pydlnm/basis.py](src/pydlnm/basis.py)`, `_ns_basis()`
+**Location:** `[src/dlnm/basis.py](src/dlnm/basis.py)`, `_ns_basis()`
 
 R's `splines::ns()` extrapolates **linearly** beyond the boundary knots (zero second derivative, by the natural spline constraint). scipy's `BSpline(extrapolate=True)` continues the cubic polynomial instead, producing completely different values outside the boundary. This matters whenever prediction points fall outside the training data range (a common case for `crosspred`).
 
@@ -172,7 +172,7 @@ if left_mask.any():
 
 ### 2. Natural spline basis — `intercept=False` constraint row
 
-**Location:** `[src/pydlnm/basis.py](src/pydlnm/basis.py)`, `_ns_basis()`
+**Location:** `[src/dlnm/basis.py](src/dlnm/basis.py)`, `_ns_basis()`
 
 R excludes the "intercept" B-spline (B-spline 0, the leftmost) by adding the unit vector `e0 = [1, 0, 0, …]` as a third constraint row before the QR null-space projection, not an all-ones row.
 
@@ -187,7 +187,7 @@ if not intercept:
 
 ### 3. `crosspred` — prediction grid ordering (varvec / lagvec)
 
-**Location:** `[src/pydlnm/crosspred.py](src/pydlnm/crosspred.py)`, `_mkXpred()`
+**Location:** `[src/dlnm/crosspred.py](src/dlnm/crosspred.py)`, `_mkXpred()`
 
 R builds the flat prediction vector as `rep(predvar, length(predlag))` (the full predvar sequence repeated once per lag) with `lagvec = rep(predlag, each=length(predvar))`. This means **predvar varies fastest** (inner loop), predlag slowest (outer loop). The opposite ordering breaks both the allfit accumulation loop and the matfit reshape.
 
@@ -200,7 +200,7 @@ lagvec = np.repeat(predlag, len(predvar))     # each lag repeated len(predvar) t
 
 ### 4. `crosspred` — matfit / matse reshape order
 
-**Location:** `[src/pydlnm/crosspred.py](src/pydlnm/crosspred.py)`, `crosspred()`
+**Location:** `[src/dlnm/crosspred.py](src/dlnm/crosspred.py)`, `crosspred()`
 
 With the corrected predvar-fastest ordering (point 3), the flat `Xpred @ coef` vector is laid out as `[predvar@lag0, predvar@lag1, …]`. Reshaping it directly as `(n_pred, n_lag)` gives the wrong column assignments. The correct reshape matches R's column-major (Fortran-order) matrix filling:
 
@@ -228,7 +228,7 @@ Rscript tests\fixtures\generate_fixtures.R
 ## Differences from the R Package
 
 
-| Feature             | R `dlnm`                                    | Python `pydlnm`                                             |
+| Feature             | R `dlnm`                                    | Python `dlnm`                                             |
 | ------------------- | ------------------------------------------- | ----------------------------------------------------------- |
 | Model fitting       | Integrated with `glm`, `gam`, `coxph`, etc. | Works with `statsmodels` or manual `coef`/`vcov`            |
 | Penalised smoothing | Via `mgcv::gam`                             | Penalty matrices provided via `cb_pen()`                    |
@@ -253,13 +253,13 @@ Rscript tests\fixtures\generate_fixtures.R
 pytest
 
 # Run tests with coverage
-pytest --cov=pydlnm --cov-report=html
+pytest --cov=dlnm --cov-report=html
 
 # Lint
 ruff check src/ tests/
 
 # Type check
-mypy src/pydlnm/
+mypy src/dlnm/
 ```
 
 ## References

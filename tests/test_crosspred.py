@@ -1,10 +1,10 @@
-"""Tests for pydlnm.crosspred module."""
+"""Tests for dlnm.crosspred module."""
 
 import numpy as np
 import pytest
 
-from pydlnm.crossbasis import crossbasis
-from pydlnm.crosspred import CrossPred, crosspred
+from dlnm.crossbasis import crossbasis
+from dlnm.crosspred import CrossPred, crosspred
 
 
 @pytest.fixture
@@ -107,7 +107,7 @@ class TestCrosspred:
 
 class TestCrosspredOneBasis:
     def test_onebasis_pred(self):
-        from pydlnm.basis import onebasis
+        from dlnm.basis import onebasis
 
         np.random.seed(42)
         x = np.random.randn(100) * 5 + 20

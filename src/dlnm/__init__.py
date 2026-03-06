@@ -17,7 +17,7 @@ https://doi.org/10.18637/jss.v043.i08
 Original R package: https://github.com/gasparrini/dlnm
 """
 
-from pydlnm.basis import (
+from dlnm.basis import (
     bs,
     cr,
     integer,
@@ -29,14 +29,14 @@ from pydlnm.basis import (
     strata,
     thr,
 )
-from pydlnm.crossbasis import crossbasis
-from pydlnm.crosspred import crosspred
-from pydlnm.crossreduce import crossreduce
-from pydlnm.datasets import load_chicagoNMMAPS, load_drug, load_nested
-from pydlnm.knots import equalknots, logknots
-from pydlnm.penalty import cb_pen
-from pydlnm.plotting import plot_crosspred, plot_crossreduce
-from pydlnm.utils import exphist, seqlag
+from dlnm.crossbasis import crossbasis
+from dlnm.crosspred import crosspred
+from dlnm.crossreduce import crossreduce
+from dlnm.datasets import load_chicagoNMMAPS, load_drug, load_nested
+from dlnm.knots import equalknots, logknots
+from dlnm.penalty import cb_pen
+from dlnm.plotting import plot_crosspred, plot_crossreduce
+from dlnm.utils import exphist, seqlag
 
 __version__ = "0.1.0"
 

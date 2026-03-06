@@ -15,8 +15,8 @@ import numpy as np
 if TYPE_CHECKING:
     import pandas as pd
 
-from pydlnm.basis import onebasis
-from pydlnm.utils import lag_matrix, mklag, seqlag
+from dlnm.basis import onebasis
+from dlnm.utils import lag_matrix, mklag, seqlag
 
 
 class CrossBasis(np.ndarray):
@@ -120,7 +120,7 @@ def crossbasis(
     Examples
     --------
     >>> import numpy as np
-    >>> from pydlnm import crossbasis
+    >>> from dlnm import crossbasis
     >>> np.random.seed(42)
     >>> temp = np.random.randn(500) * 5 + 20
     >>> cb = crossbasis(temp, lag=21,

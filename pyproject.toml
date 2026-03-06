@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pydlnm"
+name = "dlnm"
 version = "0.1.0"
 description = "Distributed Lag Non-Linear Models for Python"
 readme = "README.md"
@@ -62,7 +62,7 @@ Issues = "https://github.com/Victorivus/PyDLNM/issues"
 where = ["src"]
 
 [tool.setuptools.package-data]
-pydlnm = ["data/*.csv"]
+dlnm = ["data/*.csv"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

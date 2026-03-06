@@ -11,8 +11,8 @@ from dataclasses import dataclass, field
 import numpy as np
 from scipy.stats import norm
 
-from pydlnm.basis import OneBasis, onebasis
-from pydlnm.utils import mkat, mkcen, mklag, seqlag, tensor_product
+from dlnm.basis import OneBasis, onebasis
+from dlnm.utils import mkat, mkcen, mklag, seqlag, tensor_product
 
 
 @dataclass
@@ -264,11 +264,11 @@ def crosspred(
     --------
     >>> import numpy as np
     >>> import statsmodels.api as sm
-    >>> from pydlnm import crossbasis, crosspred
+    >>> from dlnm import crossbasis, crosspred
     >>> # ... fit a model with a crossbasis ...
     >>> # pred = crosspred(cb, model, at=np.arange(-10, 35))
     """
-    from pydlnm.crossbasis import CrossBasis
+    from dlnm.crossbasis import CrossBasis
 
     # Determine type
     if isinstance(basis, CrossBasis):

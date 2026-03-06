@@ -1,4 +1,4 @@
-"""Tests for pydlnm.plotting module."""
+"""Tests for dlnm.plotting module."""
 
 import matplotlib
 
@@ -7,10 +7,10 @@ matplotlib.use("Agg")  # Non-interactive backend for testing
 import numpy as np
 import pytest
 
-from pydlnm.crossbasis import crossbasis
-from pydlnm.crosspred import crosspred
-from pydlnm.crossreduce import crossreduce
-from pydlnm.plotting import plot_crosspred, plot_crossreduce
+from dlnm.crossbasis import crossbasis
+from dlnm.crosspred import crosspred
+from dlnm.crossreduce import crossreduce
+from dlnm.plotting import plot_crosspred, plot_crossreduce
 
 
 @pytest.fixture

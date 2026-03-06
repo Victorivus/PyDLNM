@@ -1,9 +1,9 @@
-"""Tests for pydlnm.utils module."""
+"""Tests for dlnm.utils module."""
 
 import numpy as np
 import pytest
 
-from pydlnm.utils import (
+from dlnm.utils import (
     exphist,
     findrank,
     lag_matrix,

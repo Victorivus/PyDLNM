@@ -1,10 +1,10 @@
-"""Tests for pydlnm.penalty module."""
+"""Tests for dlnm.penalty module."""
 
 import numpy as np
 import pytest
 
-from pydlnm.crossbasis import crossbasis
-from pydlnm.penalty import cb_pen
+from dlnm.crossbasis import crossbasis
+from dlnm.penalty import cb_pen
 
 
 @pytest.fixture
