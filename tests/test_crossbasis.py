@@ -135,3 +135,7 @@ class TestCrossbasis:
         )
         # After the lag period, there should be no NaN
         assert not np.isnan(cb[10:]).any()
+
+    def test_repr(self, temp_series):
+        cb = crossbasis(temp_series)
+        cb.__repr__()
