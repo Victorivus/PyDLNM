@@ -6,6 +6,8 @@ or one-basis, to be used with penalised regression methods.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 from dlnm.utils import findrank
@@ -103,7 +105,7 @@ def cb_pen(
     if sp_arr.size != npen:
         raise ValueError("'sp' must be consistent with number of penalty terms")
 
-    result = dict(Slist)
+    result: dict[str, Any] = dict(Slist)
     result["rank"] = rank
     result["sp"] = sp_arr
 

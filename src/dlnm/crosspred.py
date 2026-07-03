@@ -162,11 +162,12 @@ def _mkXpred(type_: str, basis, at, predvar, predlag, cen):
         basisvar = onebasis(varvec, **argvar)
         basislag = onebasis(lagvec, **arglag)
 
+        var_mat = np.asarray(basisvar)
         if cen is not None:
             basiscen = onebasis(np.array([cen]), **argvar)
-            basisvar = basisvar - basiscen
+            var_mat = var_mat - np.asarray(basiscen)
 
-        Xpred = tensor_product(np.asarray(basisvar), np.asarray(basislag))
+        Xpred = tensor_product(var_mat, np.asarray(basislag))
 
     elif type_ == "one":
         fun_name = basis.fun
@@ -192,11 +193,12 @@ def _mkXpred(type_: str, basis, at, predvar, predlag, cen):
                 ob_kwargs[attr_name] = val
         basisvar = onebasis(varvec, fun=fun_name, **ob_kwargs)
 
+        var_mat = np.asarray(basisvar)
         if cen is not None:
             basiscen = onebasis(np.array([cen]), fun=fun_name, **ob_kwargs)
-            basisvar = basisvar - basiscen
+            var_mat = var_mat - np.asarray(basiscen)
 
-        Xpred = np.asarray(basisvar)
+        Xpred = var_mat
 
     return Xpred
 

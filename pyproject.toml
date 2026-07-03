@@ -86,8 +86,12 @@ ignore = [
     "SIM108",  # Use ternary operator — explicit if/else is clearer for multi-step init
 ]
 
+# Type-check against 3.12 (the lint job's interpreter): modern numpy stubs use
+# PEP 695 `type` statements that mypy only parses when the target is >= 3.12,
+# and recent mypy no longer accepts a 3.9 target. Runtime 3.9 support is
+# unchanged and still verified by the 3.9 entry in the CI test matrix.
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.12"
 warn_return_any = false
 warn_unused_configs = true
 implicit_optional = true
