@@ -200,7 +200,9 @@ def crossreduce(
         lagbasis = onebasis(seqlag(lag).astype(float), **arglag)
         # M = I(ncol_var) kron (1' @ lagbasis)
         ones = np.ones((1, int(lag[1] - lag[0]) + 1))
-        M_lag = ones @ np.asarray(lagbasis)  # shape: (1, ncol_lag)
+        # np.dot (BLAS path) rather than ``@``: numpy 2.0.x's SIMD matmul gufunc
+        # sets spurious FP RuntimeWarnings on finite inputs; np.dot is identical.
+        M_lag = np.dot(ones, np.asarray(lagbasis))  # shape: (1, ncol_lag)
         M = np.kron(np.eye(ncol_var), M_lag)
 
         newbasis = onebasis(at_vals.astype(float), **argvar)
@@ -229,13 +231,13 @@ def crossreduce(
         newbasis = onebasis(seqlag(lag, bylag).astype(float), **arglag)
 
     # New reduced coefficients and vcov
-    newcoef = (M @ coef).ravel()
-    newvcov = M @ vcov @ M.T
+    newcoef = np.dot(M, coef).ravel()
+    newvcov = np.dot(np.dot(M, vcov), M.T)
 
     # Predictions
     nb = np.asarray(newbasis)
-    fit = (nb @ newcoef).ravel()
-    se = np.sqrt(np.maximum(0, np.sum((nb @ newvcov) * nb, axis=1))).ravel()
+    fit = np.dot(nb, newcoef).ravel()
+    se = np.sqrt(np.maximum(0, np.sum(np.dot(nb, newvcov) * nb, axis=1))).ravel()
 
     # --- Build result ---
     z = norm.ppf(1 - (1 - ci_level) / 2)

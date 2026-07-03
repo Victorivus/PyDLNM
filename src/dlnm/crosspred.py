@@ -332,10 +332,12 @@ def crosspred(
     # With varvec = tile(predvar, n_lag), lagvec = repeat(predlag, n_pred),
     # the flat vector is [predvar@lag0, predvar@lag1, ...], so reshape as
     # (n_lag, n_pred) then transpose to get (n_pred, n_lag).
-    matfit = (Xpred @ coef).reshape(len(predlag), len(predvar)).T
+    # np.dot (BLAS path) rather than ``@`` throughout: numpy 2.0.x's SIMD matmul
+    # gufunc sets spurious FP RuntimeWarnings on finite inputs; np.dot is identical.
+    matfit = np.dot(Xpred, coef).reshape(len(predlag), len(predvar)).T
     # Standard errors: sqrt(diag(Xpred @ vcov @ Xpred.T))
     matse = (
-        np.sqrt(np.maximum(0, np.sum((Xpred @ vcov) * Xpred, axis=1)))
+        np.sqrt(np.maximum(0, np.sum(np.dot(Xpred, vcov) * Xpred, axis=1)))
         .reshape(len(predlag), len(predvar))
         .T
     )
@@ -354,11 +356,11 @@ def crosspred(
         end = len(predvar) * (i + 1)
         Xpredall += Xpred_all[start:end, :]
         if cumul:
-            cumfit[:, i] = Xpredall @ coef
-            cumse[:, i] = np.sqrt(np.maximum(0, np.sum((Xpredall @ vcov) * Xpredall, axis=1)))
+            cumfit[:, i] = np.dot(Xpredall, coef)
+            cumse[:, i] = np.sqrt(np.maximum(0, np.sum(np.dot(Xpredall, vcov) * Xpredall, axis=1)))
 
-    allfit = (Xpredall @ coef).ravel()
-    allse = np.sqrt(np.maximum(0, np.sum((Xpredall @ vcov) * Xpredall, axis=1))).ravel()
+    allfit = np.dot(Xpredall, coef).ravel()
+    allse = np.sqrt(np.maximum(0, np.sum(np.dot(Xpredall, vcov) * Xpredall, axis=1))).ravel()
 
     # --- Build result ---
     z = norm.ppf(1 - (1 - ci_level) / 2)

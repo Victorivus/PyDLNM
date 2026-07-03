@@ -380,7 +380,10 @@ def _ns_basis(
     # QR decomposition: null space = natural spline basis
     n_constraints = const.shape[0]  # 2 (intercept=True) or 3 (intercept=False)
     Q, _ = np.linalg.qr(const.T, mode="complete")
-    ns_basis = basis @ Q[:, n_constraints:]
+    # np.dot (BLAS path) rather than ``@``: numpy 2.0.x's SIMD matmul gufunc
+    # sets spurious FP RuntimeWarnings on the non-contiguous Q column-slice
+    # even though the result is finite.  np.dot is mathematically identical.
+    ns_basis = np.dot(basis, Q[:, n_constraints:])
 
     return ns_basis
 
@@ -568,7 +571,7 @@ def ps(
     elif S is None:
         ncol = basis_mat.shape[1] + (0 if intercept else 1)
         D = np.diff(np.eye(ncol), n=diff, axis=0)
-        pen = D.T @ D
+        pen = np.dot(D.T, D)  # np.dot avoids spurious numpy 2.0.x matmul warnings
         pen = (pen + pen.T) / 2
         if not intercept:
             pen = pen[1:, 1:]
@@ -675,7 +678,7 @@ def cr(
         # Simple difference penalty as approximation
         if n_col > 2:
             D = np.diff(np.eye(n_col), n=2, axis=0)
-            pen = D.T @ D
+            pen = np.dot(D.T, D)  # np.dot avoids spurious numpy 2.0.x matmul warnings
             pen = (pen + pen.T) / 2
         else:
             pen = np.zeros((n_col, n_col))
