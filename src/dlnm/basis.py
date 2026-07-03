@@ -19,6 +19,7 @@ The following basis functions are available:
 
 from __future__ import annotations
 
+import warnings
 from typing import Callable
 
 import numpy as np
@@ -176,6 +177,65 @@ def _register(name: str):
 # ---------------------------------------------------------------------------
 
 
+def _resolve_boundary_knots(
+    x: np.ndarray,
+    knots: np.ndarray | None,
+    Boundary_knots: np.ndarray | None,
+) -> np.ndarray:
+    """Resolve the boundary knots for a spline basis.
+
+    When *Boundary_knots* is supplied explicitly it is returned unchanged.
+    When it is ``None`` it defaults to the range of *x* — matching R's
+    ``splines::ns``/``bs`` — via ``[nanmin(x), nanmax(x)]``.
+
+    The awkward case is a basis fitted on one sample and then re-evaluated
+    on a *narrower* sample (typically at prediction time) without reusing
+    the training boundary knots: the reused interior *knots* can then fall
+    outside the range of the new *x*, which makes the augmented knot
+    sequence non-monotonic and previously raised an opaque scipy error
+    (``"Knots must be in a non-decreasing order."``).
+
+    In that situation the boundary is widened to contain the interior knots
+    so the basis can still be evaluated, and a :class:`RuntimeWarning` is
+    emitted: the resulting basis differs from one whose boundary knots
+    spanned the interior knots at fit time, so multiplying it by
+    coefficients fitted on the training basis yields inconsistent results.
+    The fix for the caller is to pass ``Boundary_knots`` explicitly —
+    e.g. reuse the value stored on the fitted basis, available as
+    ``crossbasis(...).argvar["Boundary_knots"]``.
+    """
+    if Boundary_knots is not None:
+        return np.asarray(Boundary_knots, dtype=float)
+
+    lo = float(np.nanmin(x))
+    hi = float(np.nanmax(x))
+
+    if knots is not None:
+        knots = np.asarray(knots, dtype=float)
+        if knots.size > 0:
+            kmin = float(np.min(knots))
+            kmax = float(np.max(knots))
+            if kmin < lo or kmax > hi:
+                warnings.warn(
+                    "Interior knots fall outside the range of x "
+                    f"(x range [{lo:.4g}, {hi:.4g}], "
+                    f"knots range [{kmin:.4g}, {kmax:.4g}]). "
+                    "Boundary_knots were not supplied, so they are being widened "
+                    "to contain the knots; the resulting basis differs from one "
+                    "whose boundary knots spanned the knots at fit time, and is "
+                    "inconsistent with coefficients fitted on that basis. For "
+                    "consistent prediction pass Boundary_knots explicitly, e.g. "
+                    "reuse the fitted basis's stored value "
+                    "(crossbasis(...).argvar['Boundary_knots']).",
+                    RuntimeWarning,
+                    stacklevel=3,
+                )
+                lo = min(lo, kmin)
+                hi = max(hi, kmax)
+
+    return np.array([lo, hi])
+
+
 @_register("ns")
 def ns(
     x: np.ndarray,
@@ -210,9 +270,6 @@ def ns(
     if nan_mask.any():
         x_clean[nan_mask] = 0.0  # temporary fill
 
-    if Boundary_knots is None:
-        Boundary_knots = np.array([np.nanmin(x), np.nanmax(x)])
-
     if knots is not None:
         knots = np.sort(np.asarray(knots, dtype=float))
         df = len(knots) + 1 + int(intercept)  # type: ignore[arg-type]
@@ -227,6 +284,8 @@ def ns(
             knots = np.quantile(x_clean[~nan_mask], probs)
         else:
             knots = np.array([])
+
+    Boundary_knots = _resolve_boundary_knots(x, knots, Boundary_knots)
 
     # Build using patsy cr() which creates natural splines
     # We'll use scipy instead for better control
@@ -368,9 +427,6 @@ def bs(
     if nan_mask.any():
         x_clean[nan_mask] = 0.0
 
-    if Boundary_knots is None:
-        Boundary_knots = np.array([np.nanmin(x), np.nanmax(x)])
-
     if knots is not None:
         knots = np.sort(np.asarray(knots, dtype=float))
         df = len(knots) + degree + int(intercept)  # type: ignore[arg-type]
@@ -383,6 +439,8 @@ def bs(
             knots = np.quantile(x_clean[~nan_mask], probs)
         else:
             knots = np.array([])
+
+    Boundary_knots = _resolve_boundary_knots(x, knots, Boundary_knots)
 
     # Build augmented knot sequence
     augmented = np.concatenate(

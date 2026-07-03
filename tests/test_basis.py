@@ -1,5 +1,7 @@
 """Tests for dlnm.basis module."""
 
+import warnings
+
 import numpy as np
 import pytest
 
@@ -78,6 +80,44 @@ class TestNs:
         assert np.isnan(result[2]).all()
         assert not np.isnan(result[0]).any()
 
+    def test_prediction_knots_beyond_x_range(self):
+        """Interior knots beyond max(x) (a valid prediction scenario, when a
+        basis fitted on a wide sample is re-evaluated on a narrow one) must
+        not crash; the basis is still produced, with a RuntimeWarning."""
+        x = np.array([0.0, 10.0, 20.0, 30.0, 40.0, 50.0])
+        knots = np.array([29.65, 53.72, 79.59])  # 53.72, 79.59 > max(x)
+        with pytest.warns(RuntimeWarning, match="outside the range of x"):
+            b = ns(x, knots=knots)
+        assert b.shape == (len(x), 4)
+        assert np.isfinite(np.asarray(b)).all()
+
+    def test_no_warning_when_boundary_knots_supplied(self):
+        """Supplying Boundary_knots that span the knots must not warn and
+        must be reused verbatim (consistent prediction)."""
+        x = np.array([0.0, 10.0, 20.0, 30.0, 40.0, 50.0])
+        knots = np.array([29.65, 53.72, 79.59])
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", RuntimeWarning)
+            b = ns(x, knots=knots, Boundary_knots=np.array([0.0, 116.7]))
+        assert np.allclose(b.Boundary_knots, [0.0, 116.7])
+
+    def test_no_warning_at_fit_time(self, x_data):
+        """Data-derived (quantile) knots always lie within x, so fitting a
+        basis must never emit the out-of-range boundary warning."""
+        import dlnm.basis as _basis
+
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            ns(x_data, df=4)
+        assert not any(
+            "outside the range of x" in str(w.message)
+            for w in caught
+            if w.category is RuntimeWarning
+        )
+        # sanity: the helper leaves an in-range case untouched
+        bk = _basis._resolve_boundary_knots(x_data, np.array([15.0, 20.0, 25.0]), None)
+        assert bk[0] == np.nanmin(x_data) and bk[1] == np.nanmax(x_data)
+
 
 class TestBs:
     def test_shape(self, x_data):
@@ -88,6 +128,15 @@ class TestBs:
         r1 = bs(x_data, df=5, degree=2)
         r2 = bs(x_data, df=5, degree=3)
         assert r1.shape[0] == r2.shape[0]
+
+    def test_prediction_knots_beyond_x_range(self):
+        """bs() must not crash when reused interior knots exceed max(x)."""
+        x = np.array([0.0, 10.0, 20.0, 30.0, 40.0, 50.0])
+        knots = np.array([29.65, 53.72, 79.59])
+        with pytest.warns(RuntimeWarning, match="outside the range of x"):
+            b = bs(x, knots=knots)
+        assert b.shape[0] == len(x)
+        assert np.isfinite(np.asarray(b)).all()
 
 
 class TestPs:
