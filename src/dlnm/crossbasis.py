@@ -50,8 +50,8 @@ class CrossBasis(np.ndarray):
     def __repr__(self):
         return (
             f"CrossBasis(shape={self.shape}, "
-            f"df_var={self.df[0] if self.df else '?'}, "
-            f"df_lag={self.df[1] if self.df else '?'}, "
+            f"df_var={self.df[0] if self.df is not None else '?'}, "
+            f"df_lag={self.df[1] if self.df is not None else '?'}, "
             f"lag={self.lag})"
         )
 
